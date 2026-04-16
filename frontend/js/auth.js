@@ -28,6 +28,10 @@ function setButtonLoading(button, isLoading, loadingText, defaultText) {
     : defaultText;
 }
 
+function getPatientProfilePromptKey(userId) {
+  return `patient-profile-prompt-shown-${userId}`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Check existing session
   checkExistingSession();
@@ -79,9 +83,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (result.success) {
         saveSession(result.user);
+
+        if (
+          result.user.role === "patient" &&
+          result.user.needs_profile_completion
+        ) {
+          const promptKey = getPatientProfilePromptKey(result.user.id);
+          if (localStorage.getItem(promptKey) !== "1") {
+            alert("Please fill up your profile.");
+            localStorage.setItem(promptKey, "1");
+          }
+        }
+
         showToast("Login successful! Redirecting...", "success");
         setTimeout(() => {
-          window.location.href = "index.html";
+          window.location.href = `${result.user.role}.html`;
         }, 800);
       } else {
         showToast(result.message, "error");
@@ -108,6 +124,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== REGISTER FORM =====
   const registerForm = document.getElementById("register-form");
   if (registerForm) {
+    // Show/hide doctor fields based on role
+    const roleSelect = document.getElementById("reg-role");
+    const doctorFields = document.getElementById("doctor-fields");
+
+    if (roleSelect && doctorFields) {
+      const syncDoctorFieldVisibility = () => {
+        const isDoctor = roleSelect.value === "doctor";
+        doctorFields.classList.toggle("is-hidden", !isDoctor);
+        clearFieldError("reg-role", "reg-role-error");
+      };
+
+      roleSelect.addEventListener("change", syncDoctorFieldVisibility);
+      syncDoctorFieldVisibility();
+    }
+
     registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       clearAllErrors();
@@ -118,6 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const confirmPassword = document.getElementById(
         "reg-confirm-password",
       ).value;
+      const role = document.getElementById("reg-role").value;
+      const specialization =
+        document.getElementById("reg-specialization")?.value || "";
 
       // Validate
       let isValid = true;
@@ -172,6 +206,11 @@ document.addEventListener("DOMContentLoaded", () => {
         isValid = false;
       }
 
+      if (!role) {
+        showFieldError("reg-role", "reg-role-error", "Please select a role");
+        isValid = false;
+      }
+
       if (!isValid) return;
 
       // Disable button
@@ -185,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await apiCall("auth.php?action=register", {
         method: "POST",
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, role, specialization }),
       });
 
       if (result.success) {
