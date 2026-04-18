@@ -39,12 +39,10 @@ switch ($action) {
     case 'login':
         requirePostMethod();
         sendResponse(handleLogin(getJsonBody()));
-        break;
         
     case 'register':
         requirePostMethod();
         sendResponse(handleRegister(getJsonBody()));
-        break;
         
     case 'profile':
         $userId = filter_input(INPUT_GET, 'user_id', FILTER_VALIDATE_INT);
@@ -52,7 +50,6 @@ switch ($action) {
             sendResponse(['success' => false, 'message' => 'User ID required']);
         }
         sendResponse(handleGetProfile($userId));
-        break;
         
     default:
         sendResponse(['success' => false, 'message' => 'Invalid action']);
