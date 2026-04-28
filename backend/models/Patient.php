@@ -1,16 +1,19 @@
 <?php
 /**
- * Patient Model - Database operations for patient profiles
+ * Patient Model
+ * Handles all database operations for patient_profiles.
  */
 
 require_once __DIR__ . '/../config/db.php';
 
+// ----- Create an empty patient profile for a new user -----
 function createPatientProfile($userId) {
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("INSERT INTO patient_profiles (user_id) VALUES (:user_id)");
     return $stmt->execute([':user_id' => $userId]);
 }
 
+// ----- Get full patient profile (joins users + patient_profiles) -----
 function getPatientProfile($userId) {
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("
@@ -24,21 +27,21 @@ function getPatientProfile($userId) {
     return $stmt->fetch();
 }
 
+// ----- Update patient profile fields (creates profile if missing) -----
 function updatePatientProfile($userId, $data) {
     $pdo = getDBConnection();
-    
-    // Check if profile exists
+
+    // Auto-create profile row if it doesn't exist yet
     $stmt = $pdo->prepare("SELECT id FROM patient_profiles WHERE user_id = :user_id");
     $stmt->execute([':user_id' => $userId]);
-    $exists = $stmt->fetch();
-    
-    if (!$exists) {
+    if (!$stmt->fetch()) {
         createPatientProfile($userId);
     }
-    
+
     $fields = [];
     $params = [':user_id' => $userId];
-    
+
+    // Only allow whitelisted columns
     $allowed = ['phone', 'age', 'gender', 'blood_group', 'medical_history', 'address'];
     foreach ($data as $key => $value) {
         if (in_array($key, $allowed)) {
@@ -46,20 +49,21 @@ function updatePatientProfile($userId, $data) {
             $params[":$key"] = $value;
         }
     }
-    
-    // Update name in users table if provided
+
+    // Also update the name in the users table if provided
     if (isset($data['name'])) {
         $stmt2 = $pdo->prepare("UPDATE users SET name = :name WHERE id = :id");
         $stmt2->execute([':name' => $data['name'], ':id' => $userId]);
     }
-    
+
     if (empty($fields)) return true;
-    
+
     $sql = "UPDATE patient_profiles SET " . implode(', ', $fields) . " WHERE user_id = :user_id";
     $stmt = $pdo->prepare($sql);
     return $stmt->execute($params);
 }
 
+// ----- Get all patients with their profile info -----
 function getAllPatients() {
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("
@@ -74,6 +78,7 @@ function getAllPatients() {
     return $stmt->fetchAll();
 }
 
+// ----- Get all patients who have booked with a specific doctor -----
 function getPatientsByDoctor($doctorId) {
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("
