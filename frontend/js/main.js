@@ -1,12 +1,13 @@
 /**
  * Main.js - Homepage scripts
+ * Animations for feature cards and nav scroll effect.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is already logged in
+    // Redirect to dashboard if user is already logged in
     checkExistingSession();
 
-    // Smooth scroll for feature cards
+    // ----- Animate feature cards as they scroll into view -----
     const featureCards = document.querySelectorAll('.feature-card');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(card);
     });
 
-    // Nav scroll effect
+    // ----- Add shadow to nav bar on scroll -----
     const nav = document.getElementById('main-nav');
     if (nav) {
         window.addEventListener('scroll', () => {
