@@ -358,6 +358,7 @@ async function loadProfile() {
     document.getElementById("doc-specialization").value =
       p.specialization || "";
     document.getElementById("doc-qualification").value = p.qualification || "";
+    document.getElementById("doc-nmc").value = p.nmc || "";
     document.getElementById("doc-experience").value = p.experience || "";
     document.getElementById("doc-fee").value = p.consultation_fee || "";
     document.getElementById("doc-bio").value = p.bio || "";
@@ -372,6 +373,7 @@ async function loadProfile() {
       phone: document.getElementById("doc-phone").value,
       specialization: document.getElementById("doc-specialization").value,
       qualification: document.getElementById("doc-qualification").value,
+      nmc: document.getElementById("doc-nmc").value,
       experience: document.getElementById("doc-experience").value,
       consultation_fee: document.getElementById("doc-fee").value,
       bio: document.getElementById("doc-bio").value,
