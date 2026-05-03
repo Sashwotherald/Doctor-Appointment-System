@@ -4,7 +4,7 @@
  */
 
 // ===== API Configuration =====
-const API_BASE = "/Appointment/backend/api";
+const API_BASE = "/Doctor_Appointment_System/backend/api";
 
 // ===== API Helper =====
 async function apiCall(endpoint, options = {}) {
@@ -111,7 +111,8 @@ function requireAuth(role) {
   return true;
 }
 
-function logout() {
+async function logout() {
+  await apiCall("auth.php?action=logout", { method: "POST" });
   clearSession();
   window.location.href = "login.html";
 }
@@ -489,3 +490,51 @@ function checkExistingSession() {
     window.location.href = `${user.role}.html`;
   }
 }
+
+// ===== Global Table Search =====
+function initGlobalSearch() {
+  const searchInput = document.getElementById("global-search");
+  if (!searchInput) return;
+
+  searchInput.addEventListener("input", (e) => {
+    const term = e.target.value.toLowerCase().trim();
+
+    // Find the currently active section
+    const activeSection = document.querySelector(".content-section.active");
+    if (!activeSection) return;
+
+    // Filter table rows inside the active section
+    const rows = activeSection.querySelectorAll("tbody tr");
+    rows.forEach((row) => {
+      if (row.querySelector(".empty-state") || row.querySelector(".loading-overlay") || row.querySelector(".loader")) {
+        return; // Don't filter empty state / loading rows
+      }
+
+      const searchTarget = row.querySelector("strong") || row.firstElementChild || row;
+      const text = searchTarget.textContent.toLowerCase();
+      if (text.includes(term)) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+
+    // Filter cards/list items if any (e.g. today's schedule)
+    const cards = activeSection.querySelectorAll(".appointment-item, .doctor-card");
+    cards.forEach((card) => {
+      if (card.querySelector(".empty-state")) return;
+
+      const searchTarget = card.querySelector('.doctor-info h4') || card.querySelector('.appointment-details h4') || card;
+      const text = searchTarget.textContent.toLowerCase();
+      if (text.includes(term)) {
+        card.style.display = "";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initGlobalSearch();
+});
