@@ -1,6 +1,7 @@
 <?php
 /**
- * Admin Controller - Full system control
+ * Admin Controller
+ * Full system control: dashboard stats, user management, reports.
  */
 
 require_once __DIR__ . '/../models/User.php';
@@ -10,9 +11,11 @@ require_once __DIR__ . '/../models/Appointment.php';
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/PatientController.php';
 
-function handleAdminDashboard() {
+// ----- Get admin dashboard overview stats -----
+function handleAdminDashboard()
+{
     $stats = getAppointmentStats();
-    
+
     return [
         'success' => true,
         'dashboard' => [
@@ -29,32 +32,42 @@ function handleAdminDashboard() {
     ];
 }
 
-function handleGetAllDoctors() {
+// ----- Get all doctors (including non-approved) -----
+function handleGetAllDoctors()
+{
     $doctors = getAllDoctors(false);
     return ['success' => true, 'doctors' => $doctors];
 }
 
-function handleGetAllPatients() {
+// ----- Get all patients -----
+function handleGetAllPatients()
+{
     $patients = getAllPatients();
     return ['success' => true, 'patients' => $patients];
 }
 
-function handleGetAllAppointments($status = null) {
+// ----- Get all appointments, optionally filtered by status -----
+function handleGetAllAppointments($status = null)
+{
     $appointments = getAllAppointments($status);
     return ['success' => true, 'appointments' => $appointments];
 }
 
-function handleApproveDoctor($doctorId) {
+// ----- Approve a doctor registration -----
+function handleApproveDoctor($doctorId)
+{
     $result = updateDoctorApproval($doctorId, DOCTOR_APPROVED);
     if ($result) {
-        // Notify doctor
+        // Send notification to the doctor
         createNotification($doctorId, 'Account Approved', 'Your doctor account has been approved. You can now login and start receiving appointments.', 'approval');
         return ['success' => true, 'message' => 'Doctor approved successfully'];
     }
     return ['success' => false, 'message' => 'Failed to approve doctor'];
 }
 
-function handleRejectDoctor($doctorId) {
+// ----- Reject a doctor registration -----
+function handleRejectDoctor($doctorId)
+{
     $result = updateDoctorApproval($doctorId, DOCTOR_REJECTED);
     if ($result) {
         createNotification($doctorId, 'Account Rejected', 'Your doctor registration has been rejected. Please contact admin for details.', 'rejection');
@@ -63,8 +76,10 @@ function handleRejectDoctor($doctorId) {
     return ['success' => false, 'message' => 'Failed to reject doctor'];
 }
 
-function handleDeleteDoctor($doctorId) {
-    // Delete photo if exists
+// ----- Delete a doctor account (removes photo file too) -----
+function handleDeleteDoctor($doctorId)
+{
+    // Delete uploaded photo from disk if it exists
     $profile = getDoctorProfile($doctorId);
     if ($profile && $profile['photo']) {
         $photoPath = __DIR__ . '/../uploads/doctors/' . basename($profile['photo']);
@@ -72,7 +87,7 @@ function handleDeleteDoctor($doctorId) {
             unlink($photoPath);
         }
     }
-    
+
     $result = deleteUser($doctorId);
     if ($result) {
         return ['success' => true, 'message' => 'Doctor deleted successfully'];
@@ -80,7 +95,9 @@ function handleDeleteDoctor($doctorId) {
     return ['success' => false, 'message' => 'Failed to delete doctor'];
 }
 
-function handleDeletePatient($patientId) {
+// ----- Delete a patient account -----
+function handleDeletePatient($patientId)
+{
     $result = deleteUser($patientId);
     if ($result) {
         return ['success' => true, 'message' => 'Patient deleted successfully'];
@@ -88,11 +105,13 @@ function handleDeletePatient($patientId) {
     return ['success' => false, 'message' => 'Failed to delete patient'];
 }
 
-function handleAdminUpdateAppointment($data) {
+// ----- Admin updates an appointment status -----
+function handleAdminUpdateAppointment($data)
+{
     if (empty($data['appointment_id']) || empty($data['status'])) {
         return ['success' => false, 'message' => 'Appointment ID and status required'];
     }
-    
+
     $result = updateAppointmentStatus($data['appointment_id'], $data['status'], $data['notes'] ?? null);
     if ($result) {
         return ['success' => true, 'message' => 'Appointment updated'];
@@ -100,11 +119,15 @@ function handleAdminUpdateAppointment($data) {
     return ['success' => false, 'message' => 'Failed to update appointment'];
 }
 
-function handleToggleUserStatus($userId) {
+// ----- Toggle a user between active and inactive -----
+function handleToggleUserStatus($userId)
+{
     $user = getUserById($userId);
-    if (!$user) return ['success' => false, 'message' => 'User not found'];
-    if ($user['role'] === ROLE_ADMIN) return ['success' => false, 'message' => 'Cannot modify admin status'];
-    
+    if (!$user)
+        return ['success' => false, 'message' => 'User not found'];
+    if ($user['role'] === ROLE_ADMIN)
+        return ['success' => false, 'message' => 'Cannot modify admin status'];
+
     $newStatus = $user['status'] === 'active' ? 'inactive' : 'active';
     $result = updateUser($userId, ['status' => $newStatus]);
     if ($result) {
@@ -113,10 +136,12 @@ function handleToggleUserStatus($userId) {
     return ['success' => false, 'message' => 'Failed to update status'];
 }
 
-function handleGetReports() {
+// ----- Generate reports (monthly stats, top doctors, specialization counts) -----
+function handleGetReports()
+{
     $pdo = getDBConnection();
-    
-    // Monthly appointment stats
+
+    // Monthly appointment stats (last 12 months)
     $stmt = $pdo->prepare("
         SELECT 
             DATE_FORMAT(appointment_date, '%Y-%m') as month,
@@ -130,22 +155,22 @@ function handleGetReports() {
     ");
     $stmt->execute();
     $monthlyStats = $stmt->fetchAll();
-    
-    // Top doctors by appointments
+
+    // Top doctors ranked by total appointments
     $stmt = $pdo->prepare("
         SELECT d.name as doctor_name, dp.specialization, COUNT(a.id) as total_appointments,
                SUM(CASE WHEN a.status = 'completed' THEN 1 ELSE 0 END) as completed_appointments
         FROM appointments a
         INNER JOIN users d ON a.doctor_id = d.id
         LEFT JOIN doctor_profiles dp ON d.id = dp.user_id
-        GROUP BY a.doctor_id
+        GROUP BY a.doctor_id, d.name, dp.specialization
         ORDER BY total_appointments DESC
         LIMIT 10
     ");
     $stmt->execute();
     $topDoctors = $stmt->fetchAll();
-    
-    // Specialization distribution
+
+    // Number of doctors per specialization
     $stmt = $pdo->prepare("
         SELECT dp.specialization, COUNT(*) as count
         FROM doctor_profiles dp
@@ -155,7 +180,7 @@ function handleGetReports() {
     ");
     $stmt->execute();
     $specializations = $stmt->fetchAll();
-    
+
     return [
         'success' => true,
         'reports' => [
@@ -165,29 +190,4 @@ function handleGetReports() {
             'overview' => getAppointmentStats()
         ]
     ];
-}
-
-function handleGetSettings() {
-    $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT * FROM settings");
-    $stmt->execute();
-    $settings = $stmt->fetchAll();
-    
-    $result = [];
-    foreach ($settings as $s) {
-        $result[$s['setting_key']] = $s['setting_value'];
-    }
-    
-    return ['success' => true, 'settings' => $result];
-}
-
-function handleUpdateSettings($data) {
-    $pdo = getDBConnection();
-    $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE setting_value = :value2");
-    
-    foreach ($data as $key => $value) {
-        $stmt->execute([':key' => $key, ':value' => $value, ':value2' => $value]);
-    }
-    
-    return ['success' => true, 'message' => 'Settings updated successfully'];
 }
