@@ -56,7 +56,6 @@
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-fast: all 0.15s ease;
 }
-
 /* Reset & Base */
 *,
 *::before,
@@ -69,7 +68,6 @@
 html {
   scroll-behavior: smooth;
 }
-
 body {
   font-family:
     "Inter",
@@ -140,14 +138,12 @@ img {
 .logo-icon-centered {
   margin: 0 auto;
 }
-
 .logo-text {
   font-size: 20px;
   font-weight: 700;
   color: var(--primary-dark);
   letter-spacing: -0.5px;
 }
-
 .logo-text span {
   display: block;
   font-size: 10px;
@@ -156,7 +152,6 @@ img {
   text-transform: uppercase;
   letter-spacing: 2px;
 }
-
 .nav-links {
   display: flex;
   align-items: center;
@@ -790,6 +785,66 @@ img {
     transform: translateX(100%);
     opacity: 0;
   }
+}
+
+/* ===== FORGOT PASSWORD ===== */
+.forgot-password-link {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 16px;
+}
+
+.forgot-password-link a {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.forgot-password-link a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Reset link display (shown after forgot-password request) */
+.reset-link-display {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--info-bg);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.reset-link-display p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.reset-link-anchor {
+  display: inline-block;
+  word-break: break-all;
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  padding: 8px 12px;
+  background: var(--primary-lighter);
+  border-radius: var(--radius-sm);
+  margin: 6px 0;
+  transition: var(--transition-fast);
+}
+
+.reset-link-anchor:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.reset-link-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 8px;
 }
 
 /* ===== RESPONSIVE ===== */
