@@ -52,6 +52,7 @@ function setupPatientUI(user) {
   // Setup booking modal events
   setupBookingModal();
   setupRescheduleModal();
+  setupDoctorProfileModal();
 
   // Mark all read
   const markAllBtn = document.getElementById("mark-all-read-btn");
@@ -277,10 +278,6 @@ async function loadDoctors() {
     });
   }
 
-  // Set min date
-  const dateInput = document.getElementById("filter-date");
-  if (dateInput) dateInput.min = getMinDate();
-
   // Load all doctors
   await searchDoctors();
 
@@ -292,7 +289,6 @@ async function loadDoctors() {
       .getElementById("filter-reset-btn")
       ?.addEventListener("click", () => {
         document.getElementById("filter-specialization").value = "all";
-        document.getElementById("filter-date").value = "";
         searchDoctors();
       });
     doctorSearchInitialized = true;
@@ -302,10 +298,8 @@ async function loadDoctors() {
 async function searchDoctors() {
   const specialization =
     document.getElementById("filter-specialization")?.value || "all";
-  const date = document.getElementById("filter-date")?.value || "";
 
   let url = `patient.php?action=getDoctors&specialization=${specialization}`;
-  if (date) url += `&date=${date}`;
 
   const container = document.getElementById("doctor-list");
   container.innerHTML =
@@ -320,8 +314,8 @@ async function searchDoctors() {
     container.innerHTML = result.doctors
       .map(
         (doc) => `
-            <div class="doctor-card">
-                <div class="doctor-card-header">
+            <div class="doctor-card" data-doctor-id="${doc.id}">
+                <div class="doctor-card-header doctor-card-clickable" data-doctor-id="${doc.id}">
                     <div class="doctor-photo">
                         ${doc.photo ? `<img src="${doc.photo}" alt="Dr. ${escapeHtml(doc.name)}">` : `<span class="placeholder">👨‍⚕️</span>`}
                     </div>
@@ -333,10 +327,14 @@ async function searchDoctors() {
                 <div class="doctor-card-body">
                     ${doc.experience ? `<div class="doctor-detail"><span class="icon"><i class="fas fa-briefcase"></i></span> ${doc.experience} years experience</div>` : ""}
                     ${doc.qualification ? `<div class="doctor-detail"><span class="icon"><i class="fas fa-graduation-cap"></i></span> ${escapeHtml(doc.qualification)}</div>` : ""}
+                    ${doc.nmc ? `<div class="doctor-detail"><span class="icon"><i class="fas fa-id-card"></i></span> NMC: ${escapeHtml(doc.nmc)}</div>` : ""}
                     ${doc.consultation_fee ? `<div class="doctor-detail"><span class="icon"><i class="fas fa-indian-rupee-sign"></i></span> Rs. ${parseFloat(doc.consultation_fee).toFixed(2)} per visit</div>` : ""}
                     ${doc.availability ? `<div class="doctor-detail"><span class="icon"><i class="fas fa-clock"></i></span> Available today</div>` : ""}
                 </div>
                 <div class="doctor-card-footer">
+                    <button class="btn btn-secondary btn-sm view-profile-btn" data-doctor-id="${doc.id}">
+                        <i class="fas fa-user"></i> View Profile
+                    </button>
                     <button class="btn btn-primary btn-sm book-now-btn" data-doctor-id="${doc.id}">
                         <i class="fas fa-calendar-plus"></i> Book Now
                     </button>
@@ -346,8 +344,27 @@ async function searchDoctors() {
       )
       .join("");
 
+    // View Profile button click
+    container.querySelectorAll(".view-profile-btn").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const doctorId = Number(button.dataset.doctorId);
+        openDoctorProfileModal(doctorId);
+      });
+    });
+
+    // Clickable card header to open profile
+    container.querySelectorAll(".doctor-card-clickable").forEach((header) => {
+      header.addEventListener("click", () => {
+        const doctorId = Number(header.dataset.doctorId);
+        openDoctorProfileModal(doctorId);
+      });
+    });
+
+    // Book Now button click
     container.querySelectorAll(".book-now-btn").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
         const doctorId = Number(button.dataset.doctorId);
         const doctor = doctorLookup.get(doctorId);
         if (doctor) {
@@ -362,6 +379,239 @@ async function searchDoctors() {
                 <h3>No doctors found</h3>
                 <p>Try adjusting your search filters or check back later.</p>
             </div>`;
+  }
+}
+
+// ===== DOCTOR PROFILE MODAL =====
+let currentProfileDoctorId = null;
+
+function setupDoctorProfileModal() {
+  document
+    .getElementById("close-doctor-profile-modal")
+    ?.addEventListener("click", () => closeModal("doctor-profile-modal"));
+  document
+    .getElementById("close-profile-btn")
+    ?.addEventListener("click", () => closeModal("doctor-profile-modal"));
+
+  // Book from profile
+  document
+    .getElementById("book-from-profile-btn")
+    ?.addEventListener("click", () => {
+      closeModal("doctor-profile-modal");
+      const doctor = doctorLookup.get(currentProfileDoctorId);
+      if (doctor) {
+        openBookingModal(doctor);
+      }
+    });
+
+  // Close on overlay click
+  document
+    .getElementById("doctor-profile-modal")
+    ?.addEventListener("click", (e) => {
+      if (e.target.id === "doctor-profile-modal") {
+        closeModal("doctor-profile-modal");
+      }
+    });
+}
+
+async function openDoctorProfileModal(doctorId) {
+  currentProfileDoctorId = doctorId;
+  const body = document.getElementById("doctor-profile-body");
+  body.innerHTML =
+    '<div class="loading-overlay"><div class="loader"></div></div>';
+  openModal("doctor-profile-modal");
+
+  const result = await apiCall(
+    `patient.php?action=getDoctorProfile&doctor_id=${doctorId}`,
+  );
+
+  if (result.success && result.doctor) {
+    const doc = result.doctor;
+    const availability = doc.availability || [];
+
+    // Build availability schedule HTML
+    const daysOrder = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+    let scheduleHTML = "";
+
+    if (availability.length > 0) {
+      scheduleHTML = daysOrder
+        .map((day) => {
+          const dayData = availability.find((a) => a.day_of_week === day);
+          if (dayData && dayData.is_available == 1) {
+            return `
+            <div class="profile-schedule-row available">
+              <span class="profile-schedule-day">${day}</span>
+              <span class="profile-schedule-time">
+                <i class="fas fa-clock"></i>
+                ${formatTime(dayData.start_time)} – ${formatTime(dayData.end_time)}
+              </span>
+            </div>`;
+          } else {
+            return `
+            <div class="profile-schedule-row unavailable">
+              <span class="profile-schedule-day">${day}</span>
+              <span class="profile-schedule-time unavailable-text">
+                <i class="fas fa-times-circle"></i> Unavailable
+              </span>
+            </div>`;
+          }
+        })
+        .join("");
+    } else {
+      scheduleHTML = `
+        <div class="profile-schedule-default">
+          <i class="fas fa-info-circle"></i>
+          Default hours: Mon – Fri, 9:00 AM – 5:00 PM
+        </div>`;
+    }
+
+    body.innerHTML = `
+      <!-- Profile Banner -->
+      <div class="dp-banner">
+        <div class="dp-photo-wrapper">
+          ${
+            doc.photo
+              ? `<img src="${doc.photo}" alt="Dr. ${escapeHtml(doc.name)}" class="dp-photo">`
+              : `<div class="dp-photo dp-photo-fallback">${doc.name ? doc.name.charAt(0).toUpperCase() : "?"}</div>`
+          }
+        </div>
+        <div class="dp-banner-info">
+          <h2 class="dp-name">Dr. ${escapeHtml(doc.name)}</h2>
+          <span class="dp-specialization">${escapeHtml(doc.specialization || "General Medicine")}</span>
+          ${
+            doc.approval_status === "approved"
+              ? '<span class="dp-verified"><i class="fas fa-check-circle"></i> Verified</span>'
+              : ""
+          }
+        </div>
+      </div>
+
+      <!-- Bio -->
+      ${
+        doc.bio
+          ? `
+        <div class="dp-section">
+          <h4 class="dp-section-title"><i class="fas fa-quote-left"></i> About</h4>
+          <p class="dp-bio">${escapeHtml(doc.bio)}</p>
+        </div>
+      `
+          : ""
+      }
+
+      <!-- Details Grid -->
+      <div class="dp-section">
+        <h4 class="dp-section-title"><i class="fas fa-info-circle"></i> Details</h4>
+        <div class="dp-details-grid">
+          ${
+            doc.qualification
+              ? `
+            <div class="dp-detail-item">
+              <div class="dp-detail-icon"><i class="fas fa-graduation-cap"></i></div>
+              <div class="dp-detail-content">
+                <span class="dp-detail-label">Qualification</span>
+                <span class="dp-detail-value">${escapeHtml(doc.qualification)}</span>
+              </div>
+            </div>`
+              : ""
+          }
+          ${
+            doc.experience
+              ? `
+            <div class="dp-detail-item">
+              <div class="dp-detail-icon"><i class="fas fa-briefcase"></i></div>
+              <div class="dp-detail-content">
+                <span class="dp-detail-label">Experience</span>
+                <span class="dp-detail-value">${doc.experience} years</span>
+              </div>
+            </div>`
+              : ""
+          }
+          ${
+            doc.nmc
+              ? `
+            <div class="dp-detail-item">
+              <div class="dp-detail-icon"><i class="fas fa-id-card"></i></div>
+              <div class="dp-detail-content">
+                <span class="dp-detail-label">NMC Registration</span>
+                <span class="dp-detail-value">${escapeHtml(doc.nmc)}</span>
+              </div>
+            </div>`
+              : ""
+          }
+          ${
+            doc.consultation_fee
+              ? `
+            <div class="dp-detail-item">
+              <div class="dp-detail-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+              <div class="dp-detail-content">
+                <span class="dp-detail-label">Consultation Fee</span>
+                <span class="dp-detail-value dp-fee">Rs. ${parseFloat(doc.consultation_fee).toFixed(2)}</span>
+              </div>
+            </div>`
+              : ""
+          }
+          ${
+            doc.phone
+              ? `
+            <div class="dp-detail-item">
+              <div class="dp-detail-icon"><i class="fas fa-phone"></i></div>
+              <div class="dp-detail-content">
+                <span class="dp-detail-label">Phone</span>
+                <span class="dp-detail-value">${escapeHtml(doc.phone)}</span>
+              </div>
+            </div>`
+              : ""
+          }
+          ${
+            doc.email
+              ? `
+            <div class="dp-detail-item">
+              <div class="dp-detail-icon"><i class="fas fa-envelope"></i></div>
+              <div class="dp-detail-content">
+                <span class="dp-detail-label">Email</span>
+                <span class="dp-detail-value">${escapeHtml(doc.email)}</span>
+              </div>
+            </div>`
+              : ""
+          }
+        </div>
+      </div>
+
+      <!-- Availability Schedule -->
+      <div class="dp-section">
+        <h4 class="dp-section-title"><i class="fas fa-calendar-alt"></i> Weekly Availability</h4>
+        <div class="dp-schedule">
+          ${scheduleHTML}
+        </div>
+      </div>
+
+      <!-- Member Since -->
+      ${
+        doc.created_at
+          ? `
+        <div class="dp-member-since">
+          <i class="fas fa-user-clock"></i>
+          Member since ${formatDate(doc.created_at)}
+        </div>
+      `
+          : ""
+      }
+    `;
+  } else {
+    body.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">😔</div>
+        <h3>Could not load profile</h3>
+        <p>${result.message || "An error occurred while loading the doctor profile."}</p>
+      </div>`;
   }
 }
 
@@ -433,29 +683,36 @@ async function loadTimeSlots(doctorId, date) {
     patientEndpoint("getDoctorAvailability", `&doctor_id=${doctorId}`),
   );
 
-  const dayOfWeek = new Date(date).toLocaleDateString("en-US", {
+  const [year, month, day] = date.split('-');
+  const dateObj = new Date(year, month - 1, day);
+  const dayOfWeek = dateObj.toLocaleDateString("en-US", {
     weekday: "long",
   });
   let slots = [];
 
-  if (result.success && result.availability) {
+  if (result.success && result.availability && result.availability.length > 0) {
+    // If the doctor has set their availability at least once (records exist)
     const dayAvail = result.availability.find(
-      (a) => a.day_of_week === dayOfWeek && a.is_available == 1,
+      (a) => a.day_of_week === dayOfWeek
     );
-    if (dayAvail) {
+    if (dayAvail && dayAvail.is_available == 1) {
       slots = generateTimeSlots(dayAvail.start_time, dayAvail.end_time);
     }
-  }
-
-  if (slots.length === 0) {
-    // Default time slots
+    // Else: slots remains empty. We DO NOT fallback if they have customized their schedule.
+  } else {
+    // Only fallback if the doctor has zero records in the database
     slots = generateTimeSlots("09:00", "17:00");
   }
 
-  timeSelect.innerHTML = '<option value="">Select a time slot</option>';
-  slots.forEach((slot) => {
-    timeSelect.innerHTML += `<option value="${slot}">${formatTime(slot)}</option>`;
-  });
+  timeSelect.innerHTML = '';
+  if (slots.length === 0) {
+    timeSelect.innerHTML = '<option value="">Doctor is not available on this day</option>';
+  } else {
+    timeSelect.innerHTML = '<option value="">Select a time slot</option>';
+    slots.forEach((slot) => {
+      timeSelect.innerHTML += `<option value="${slot}">${formatTime(slot)}</option>`;
+    });
+  }
 }
 
 async function confirmBooking() {
