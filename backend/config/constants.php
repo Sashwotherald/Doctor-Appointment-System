@@ -23,7 +23,7 @@ define('DOCTOR_REJECTED', 'rejected');
 
 // Upload paths
 define('UPLOAD_DIR', __DIR__ . '/../uploads/doctors/');
-define('UPLOAD_URL', '/Appointment/backend/uploads/doctors/');
+define('UPLOAD_URL', '/Doctor_Appointment_System/backend/uploads/doctors/');
 
 // Specializations
 define('SPECIALIZATIONS', [
