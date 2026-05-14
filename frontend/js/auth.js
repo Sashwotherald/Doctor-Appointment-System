@@ -162,17 +162,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Validate email
       if (!email) {
-        showFieldError("forgot-email", "forgot-email-error", "Email is required");
+        showFieldError(
+          "forgot-email",
+          "forgot-email-error",
+          "Email is required",
+        );
         return;
       }
       if (!validateEmail(email)) {
-        showFieldError("forgot-email", "forgot-email-error", "Please enter a valid email");
+        showFieldError(
+          "forgot-email",
+          "forgot-email-error",
+          "Please enter a valid email",
+        );
         return;
       }
 
       // Show loading state
       const submitBtn = document.getElementById("forgot-submit-btn");
-      setButtonLoading(submitBtn, true, "Sending...", "Send Reset Link");
+      setButtonLoading(submitBtn, true, "Sending...", "Send OTP");
 
       // Call forgot-password API
       const result = await apiCall("auth.php?action=forgotPassword", {
@@ -181,23 +189,56 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (result.success) {
-        showToast("If the email exists, a reset link has been generated.", "success", 5000);
+        showToast(result.message, "success", 5000);
 
-        // Display the reset link so the user can click it (simulates email)
+        // Show email-sent confirmation with icon
         const linkDisplay = document.getElementById("reset-link-display");
-        if (linkDisplay && result.reset_link) {
+        if (linkDisplay) {
           linkDisplay.classList.remove("is-hidden");
-          linkDisplay.innerHTML = `
-            <p><strong>Reset link (click below):</strong></p>
-            <a href="${result.reset_link}" class="reset-link-anchor">${result.reset_link}</a>
-            <p class="reset-link-note">In a real system this link would be sent to your email.</p>
-          `;
+
+          if (result.otp) {
+            // SMTP not configured – show the OTP directly (dev/demo mode)
+            linkDisplay.innerHTML = `
+              <div style="text-align:center;padding:10px 0;">
+                <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:40px;background:var(--primary-lighter, #e0f4f4);border-radius:6px;margin-bottom:16px;font-size:22px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">🔑</div>
+                <p style="margin:0 0 12px;font-weight:600;color:var(--text-primary);font-size:16px;">Your OTP (Dev Mode)</p>
+                <p style="margin:0 0 8px;color:var(--text-secondary);font-size:15px;line-height:1.5;">
+                  Email delivery not configured.
+                </p>
+                <p style="margin:0 0 16px;color:var(--text-muted);font-size:14px;">
+                  Your OTP is: <strong style="color:var(--text-primary);">${result.otp}</strong>
+                </p>
+                <a href="reset-password.html" 
+                   style="display:inline-block;padding:12px 32px;background:#7c3aed;color:#fff;font-size:16px;font-weight:600;text-decoration:none;border-radius:8px;margin-top:6px;transition:0.2s;box-shadow:0 4px 10px rgba(124,58,237,0.3);">
+                  Enter OTP
+                </a>
+              </div>
+            `;
+          } else {
+            // Email was sent successfully
+            linkDisplay.innerHTML = `
+              <div style="text-align:center;padding:10px 0;">
+                <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:40px;background:#ede9fe;border-radius:6px;margin-bottom:16px;font-size:22px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">📧</div>
+                <p style="margin:0 0 16px;font-weight:600;color:var(--text-primary);font-size:15px;">Check Your Email</p>
+                <p style="margin:0 0 16px;color:var(--text-secondary);font-size:14px;line-height:1.5;">
+                  We've sent an OTP to <strong style="color:var(--text-primary);">${email}</strong>.
+                </p>
+                <p style="margin:0 0 20px;color:var(--text-muted);font-size:13px;">
+                  The OTP will expire in 60 minutes.
+                </p>
+                <a href="reset-password.html" 
+                   style="display:inline-block;padding:12px 36px;background:#7c3aed;color:#fff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;margin-top:4px;transition:0.2s;box-shadow:0 4px 10px rgba(124,58,237,0.3);">
+                  Enter OTP
+                </a>
+              </div>
+            `;
+          }
         }
       } else {
         showToast(result.message, "error");
       }
 
-      setButtonLoading(submitBtn, false, "", "Send Reset Link");
+      setButtonLoading(submitBtn, false, "", "Send OTP");
     });
 
     // Clear error on input
@@ -225,6 +266,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       roleSelect.addEventListener("change", syncDoctorFieldVisibility);
       syncDoctorFieldVisibility();
+
+      // Clear NMC error on input
+      const nmcInput = document.getElementById("reg-nmc");
+      if (nmcInput) {
+        nmcInput.addEventListener("input", () =>
+          clearFieldError("reg-nmc", "reg-nmc-error"),
+        );
+      }
     }
 
     registerForm.addEventListener("submit", async (e) => {
@@ -240,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const role = document.getElementById("reg-role").value;
       const specialization =
         document.getElementById("reg-specialization")?.value || "";
+      const nmc = document.getElementById("reg-nmc")?.value.trim() || "";
 
       // Validate all fields
       let isValid = true;
@@ -297,6 +347,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!role) {
         showFieldError("reg-role", "reg-role-error", "Please select a role");
         isValid = false;
+      } else if (role === "doctor") {
+        if (!nmc) {
+          showFieldError(
+            "reg-nmc",
+            "reg-nmc-error",
+            "NMC number is required for doctors",
+          );
+          isValid = false;
+        }
       }
 
       if (!isValid) return;
@@ -313,7 +372,14 @@ document.addEventListener("DOMContentLoaded", () => {
       // Call register API
       const result = await apiCall("auth.php?action=register", {
         method: "POST",
-        body: JSON.stringify({ name, email, password, role, specialization }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+          specialization,
+          nmc,
+        }),
       });
 
       if (result.success) {
