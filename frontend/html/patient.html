@@ -1,482 +1,700 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Patient Dashboard - Manage your appointments and health records."
+    />
+    <title>Patient Dashboard | Herald Clinical Sanctuary</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Patient Dashboard - Manage your appointments and health records." />
-  <title>Patient Dashboard | Herald Clinical Sanctuary</title>
-  <link rel="stylesheet" href="../css/styles.css" />
-  <link rel="stylesheet" href="../css/dashboard.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-</head>
+  <body>
+    <div class="dashboard-layout">
+      <!-- Sidebar Overlay (mobile) -->
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-<body>
-  <div class="dashboard-layout">
-    <!-- Sidebar Overlay (mobile) -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          <div class="logo-icon"><i class="fas fa-shield-heart"></i></div>
-          <div class="logo-text">Herald Clinical<span>Sanctuary</span></div>
-        </div>
-      </div>
-      <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-section="dashboard" id="nav-dashboard">
-          <span class="nav-icon"><i class="fas fa-th-large"></i></span>
-          Dashboard
-        </a>
-        <a href="#" class="nav-item" data-section="appointments" id="nav-appointments">
-          <span class="nav-icon"><i class="fas fa-calendar-check"></i></span>
-          Appointments
-          <span class="nav-badge is-hidden" id="pending-badge">0</span>
-        </a>
-        <a href="#" class="nav-item" data-section="find-doctor" id="nav-find-doctor">
-          <span class="nav-icon"><i class="fas fa-user-md"></i></span> Find a
-          Doctor
-        </a>
-        <a href="#" class="nav-item" data-section="profile" id="nav-profile">
-          <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
-          Profile
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <a href="#" class="nav-item" id="logout-btn">
-          <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-          Logout
-        </a>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Top Bar -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="mobile-toggle" id="mobile-toggle">
-            <i class="fas fa-bars"></i>
-          </button>
-          <div class="search-bar">
-            <span class="search-icon"><i class="fas fa-search"></i></span>
-            <input type="text" placeholder="Search Doctors..." id="global-search" />
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon"><i class="fas fa-shield-heart"></i></div>
+            <div class="logo-text">Herald Clinical<span>Sanctuary</span></div>
           </div>
         </div>
-        <div class="topbar-right">
-          <button class="notification-btn" id="notification-btn">
-            <i class="fas fa-bell"></i>
-            <span class="badge is-hidden" id="notif-count">0</span>
-          </button>
-          <div class="user-info" id="user-info-display">
-            <div class="user-details">
-              <div class="user-name" id="topbar-name">Patient</div>
-              <div class="user-role">PATIENT</div>
+        <nav class="sidebar-nav">
+          <a
+            href="#"
+            class="nav-item active"
+            data-section="dashboard"
+            id="nav-dashboard"
+          >
+            <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+            Dashboard
+          </a>
+          <a
+            href="#"
+            class="nav-item"
+            data-section="appointments"
+            id="nav-appointments"
+          >
+            <span class="nav-icon"><i class="fas fa-calendar-check"></i></span>
+            Appointments
+            <span class="nav-badge is-hidden" id="pending-badge">0</span>
+          </a>
+          <a
+            href="#"
+            class="nav-item"
+            data-section="find-doctor"
+            id="nav-find-doctor"
+          >
+            <span class="nav-icon"><i class="fas fa-user-md"></i></span> Find a
+            Doctor
+          </a>
+          <a href="#" class="nav-item" data-section="profile" id="nav-profile">
+            <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
+            Profile
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="#" class="nav-item" id="logout-btn">
+            <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+            Logout
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-toggle" id="mobile-toggle">
+              <i class="fas fa-bars"></i>
+            </button>
+            <div class="search-bar">
+              <span class="search-icon"><i class="fas fa-search"></i></span>
+              <input
+                type="text"
+                placeholder="Search Doctors..."
+                id="global-search"
+              />
             </div>
-            <div class="user-avatar" id="topbar-avatar">P</div>
           </div>
-        </div>
-      </header>
-
-      <!-- Page Content -->
-      <div class="page-content">
-        <!-- ===== DASHBOARD SECTION ===== -->
-        <div class="content-section active" id="section-dashboard">
-          <div class="page-header">
-            <h1 id="greeting-text">Good morning, Patient.</h1>
-            <p>
-              Here is everything you need for your healthcare journey today.
-            </p>
+          <div class="topbar-right">
+            <button class="notification-btn" id="notification-btn">
+              <i class="fas fa-bell"></i>
+              <span class="badge is-hidden" id="notif-count">0</span>
+            </button>
+            <div class="user-info" id="user-info-display">
+              <div class="user-details">
+                <div class="user-name" id="topbar-name">Patient</div>
+                <div class="user-role">PATIENT</div>
+              </div>
+              <div class="user-avatar" id="topbar-avatar">P</div>
+            </div>
           </div>
+        </header>
 
-          <div class="stats-grid">
-            <div class="stat-card primary">
-              <div class="stat-header">
-                <div class="stat-icon">
-                  <i class="fas fa-calendar-check"></i>
+        <!-- Page Content -->
+        <div class="page-content">
+          <!-- ===== DASHBOARD SECTION ===== -->
+          <div class="content-section active" id="section-dashboard">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner" id="welcome-banner">
+              <div class="welcome-banner-content">
+                <div class="welcome-text">
+                  <h1 id="greeting-text"><span class="welcome-wave">👋</span> Good morning, Patient.</h1>
+                  <p class="welcome-subtitle">
+                    Here is everything you need for your healthcare journey today.
+                  </p>
                 </div>
-                <span class="stat-label">Total Appointments</span>
-              </div>
-              <div class="stat-value" id="stat-total">0</div>
-            </div>
-            <div class="stat-card success">
-              <div class="stat-header">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <span class="stat-label">Upcoming</span>
-              </div>
-              <div class="stat-value" id="stat-upcoming">0</div>
-            </div>
-            <div class="stat-card warning">
-              <div class="stat-header">
-                <div class="stat-icon">
-                  <i class="fas fa-hourglass-half"></i>
-                </div>
-                <span class="stat-label">Pending</span>
-              </div>
-              <div class="stat-value" id="stat-pending">0</div>
-            </div>
-            <div class="stat-card info">
-              <div class="stat-header">
-                <div class="stat-icon"><i class="fas fa-bell"></i></div>
-                <span class="stat-label">Notifications</span>
-              </div>
-              <div class="stat-value" id="stat-notifs">0</div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <!-- Upcoming Appointments -->
-            <div class="card">
-              <div class="card-header">
-                <h3>
-                  <i class="fas fa-calendar-alt"></i> Your Next Appointments
-                </h3>
-                <a href="#" class="btn btn-sm btn-secondary" data-nav="appointments">View All</a>
-              </div>
-              <div class="card-body">
-                <div class="appointment-list" id="upcoming-list">
-                  <div class="empty-state">
-                    <div class="empty-icon">📅</div>
-                    <h3>No upcoming appointments</h3>
-                    <p>Find a doctor and book your first appointment.</p>
-                    <a href="#" class="btn btn-primary btn-sm" data-nav="find-doctor">Find a Doctor</a>
+                <div class="welcome-date-widget">
+                  <div class="date-widget-day" id="widget-day">--</div>
+                  <div class="date-widget-details">
+                    <span class="date-widget-month" id="widget-month">---</span>
+                    <span class="date-widget-year" id="widget-year">----</span>
                   </div>
                 </div>
               </div>
+              <div class="welcome-banner-decoration">
+                <div class="decoration-circle circle-1"></div>
+                <div class="decoration-circle circle-2"></div>
+                <div class="decoration-circle circle-3"></div>
+              </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div>
-              <div class="card mb-20">
+            <!-- Stats Grid -->
+            <div class="stats-grid enhanced-stats">
+              <div class="stat-card primary" id="stat-card-total">
+                <div class="stat-card-glow"></div>
+                <div class="stat-header">
+                  <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                  </div>
+                  <span class="stat-label">Total Appointments</span>
+                </div>
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-card-bar"></div>
+              </div>
+              <div class="stat-card success" id="stat-card-upcoming">
+                <div class="stat-card-glow"></div>
+                <div class="stat-header">
+                  <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                  <span class="stat-label">Upcoming</span>
+                </div>
+                <div class="stat-value" id="stat-upcoming">0</div>
+                <div class="stat-card-bar"></div>
+              </div>
+              <div class="stat-card warning" id="stat-card-pending">
+                <div class="stat-card-glow"></div>
+                <div class="stat-header">
+                  <div class="stat-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                  </div>
+                  <span class="stat-label">Pending</span>
+                </div>
+                <div class="stat-value" id="stat-pending">0</div>
+                <div class="stat-card-bar"></div>
+              </div>
+              <div class="stat-card info" id="stat-card-notifs">
+                <div class="stat-card-glow"></div>
+                <div class="stat-header">
+                  <div class="stat-icon"><i class="fas fa-bell"></i></div>
+                  <span class="stat-label">Notifications</span>
+                </div>
+                <div class="stat-value" id="stat-notifs">0</div>
+                <div class="stat-card-bar"></div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <!-- Upcoming Appointments -->
+              <div class="card elevated-card">
                 <div class="card-header">
-                  <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                  <h3>
+                    <i class="fas fa-calendar-alt"></i> Your Next Appointments
+                  </h3>
+                  <a
+                    href="#"
+                    class="btn btn-sm btn-secondary"
+                    data-nav="appointments"
+                    >View All</a
+                  >
                 </div>
                 <div class="card-body">
-                  <div class="quick-actions">
-                    <div class="quick-action-item" data-nav="find-doctor" id="qa-find-doctor">
-                      <div class="quick-action-icon">
-                        <i class="fas fa-user-md"></i>
-                      </div>
-                      <div class="quick-action-text">
-                        <h4>Find a Doctor</h4>
-                        <p>Browse specialists in your network</p>
-                      </div>
-                      <span class="quick-action-arrow"><i class="fas fa-chevron-right"></i></span>
-                    </div>
-                    <div class="quick-action-item" data-nav="appointments" id="qa-view-history">
-                      <div class="quick-action-icon">
-                        <i class="fas fa-history"></i>
-                      </div>
-                      <div class="quick-action-text">
-                        <h4>View History</h4>
-                        <p>Access results and past visits</p>
-                      </div>
-                      <span class="quick-action-arrow"><i class="fas fa-chevron-right"></i></span>
-                    </div>
-                    <div class="quick-action-item" data-nav="profile" id="qa-profile">
-                      <div class="quick-action-icon">
-                        <i class="fas fa-file-medical"></i>
-                      </div>
-                      <div class="quick-action-text">
-                        <h4>Medical Records</h4>
-                        <p>Manage your health information</p>
-                      </div>
-                      <span class="quick-action-arrow"><i class="fas fa-chevron-right"></i></span>
+                  <div class="appointment-list" id="upcoming-list">
+                    <div class="empty-state">
+                      <div class="empty-icon">📅</div>
+                      <h3>No upcoming appointments</h3>
+                      <p>Find a doctor and book your first appointment.</p>
+                      <a
+                        href="#"
+                        class="btn btn-primary btn-sm"
+                        data-nav="find-doctor"
+                        >Find a Doctor</a
+                      >
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="help-card">
-                <h4>Need immediate help?</h4>
-                <p>
-                  Our 24/7 care concierge is available to assist you with
-                  urgent scheduling or medical questions.
-                </p>
-                <button class="btn">Call Care Team</button>
+
+              <!-- Right Column -->
+              <div>
+                <!-- Quick Actions -->
+                <div class="card mb-20 elevated-card">
+                  <div class="card-header">
+                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="quick-actions enhanced-quick-actions">
+                      <div
+                        class="quick-action-item"
+                        data-nav="find-doctor"
+                        id="qa-find-doctor"
+                      >
+                        <div class="quick-action-icon qa-icon-doctor">
+                          <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="quick-action-text">
+                          <h4>Find a Doctor</h4>
+                          <p>Browse specialists in your network</p>
+                        </div>
+                        <span class="quick-action-arrow"
+                          ><i class="fas fa-chevron-right"></i
+                        ></span>
+                      </div>
+                      <div
+                        class="quick-action-item"
+                        data-nav="appointments"
+                        id="qa-view-history"
+                      >
+                        <div class="quick-action-icon qa-icon-history">
+                          <i class="fas fa-history"></i>
+                        </div>
+                        <div class="quick-action-text">
+                          <h4>View History</h4>
+                          <p>Access results and past visits</p>
+                        </div>
+                        <span class="quick-action-arrow"
+                          ><i class="fas fa-chevron-right"></i
+                        ></span>
+                      </div>
+                      <div
+                        class="quick-action-item"
+                        data-nav="profile"
+                        id="qa-profile"
+                      >
+                        <div class="quick-action-icon qa-icon-records">
+                          <i class="fas fa-file-medical"></i>
+                        </div>
+                        <div class="quick-action-text">
+                          <h4>Medical Records</h4>
+                          <p>Manage your health information</p>
+                        </div>
+                        <span class="quick-action-arrow"
+                          ><i class="fas fa-chevron-right"></i
+                        ></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AI Emergency Booking -->
+                <div class="emergency-card mt-20 enhanced-emergency" id="ai-emergency-booking">
+                  <!-- Animated top bar handled by CSS -->
+                  <div class="emergency-hero">
+                    <div class="emergency-icon-ring">
+                      <div class="emergency-icon-ring-pulse"></div>
+                      <i class="fas fa-heart-pulse"></i>
+                    </div>
+                    <div class="emergency-hero-text">
+                      <h4>AI Emergency Triage</h4>
+                      <p>Instant symptom analysis & fastest booking</p>
+                    </div>
+                    <span class="emergency-live-badge">
+                      <span class="live-dot"></span> LIVE
+                    </span>
+                  </div>
+
+                  <!-- Steps indicator -->
+                  <div class="emergency-steps" id="emergency-steps">
+                    <div class="emergency-step active" data-step="1">
+                      <div class="step-dot">1</div>
+                      <span>Describe</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="emergency-step" data-step="2">
+                      <div class="step-dot">2</div>
+                      <span>Analyze</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="emergency-step" data-step="3">
+                      <div class="step-dot">3</div>
+                      <span>Booked</span>
+                    </div>
+                  </div>
+
+                  <!-- Input Area -->
+                  <div id="emergency-input-area" class="emergency-input-container">
+                    <div class="emergency-textarea-wrapper">
+                      <i class="fas fa-comment-medical emergency-textarea-icon"></i>
+                      <textarea
+                        id="emergency-symptoms"
+                        placeholder="Describe your symptoms in detail (e.g. severe chest pain radiating to left arm, shortness of breath...)"
+                        rows="4"
+                        class="form-control emergency-textarea"
+                      ></textarea>
+                    </div>
+                    <div class="emergency-hint">
+                      <i class="fas fa-shield-alt"></i>
+                      Your data is encrypted and only shared with your assigned doctor.
+                    </div>
+                    <button
+                      class="btn btn-danger btn-emergency"
+                      id="ai-emergency-btn"
+                    >
+                      <i class="fas fa-bolt"></i>
+                      <span>Analyze & Book Instantly</span>
+                      <i class="fas fa-arrow-right emergency-btn-arrow"></i>
+                    </button>
+                  </div>
+
+                  <!-- Loading State -->
+                  <div id="emergency-loading" class="is-hidden emergency-loading-state">
+                    <div class="emergency-loading-visual">
+                      <div class="loading-ring">
+                        <div class="loading-ring-inner"></div>
+                      </div>
+                      <div class="loading-brain-icon">
+                        <i class="fas fa-brain"></i>
+                      </div>
+                    </div>
+                    <h4 class="loading-title">AI is analyzing your symptoms...</h4>
+                    <p class="loading-subtitle">Matching you with the best specialist and fastest slot</p>
+                    <div class="loading-progress-bar">
+                      <div class="loading-progress-fill"></div>
+                    </div>
+                  </div>
+
+                  <!-- Result Area -->
+                  <div id="emergency-result" class="is-hidden mt-10 emergency-result-card">
+                    <!-- Results will be injected here by JS -->
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== APPOINTMENTS SECTION ===== -->
+          <div class="content-section" id="section-appointments">
+            <div class="page-header">
+              <h1>My Appointments</h1>
+              <p>View and manage all your appointment history.</p>
+            </div>
+
+            <div class="tabs">
+              <button
+                class="tab-btn active"
+                data-tab="all-appts"
+                id="tab-all-appts"
+              >
+                All
+              </button>
+              <button
+                class="tab-btn"
+                data-tab="pending-appts"
+                id="tab-pending-appts"
+              >
+                Pending
+              </button>
+              <button
+                class="tab-btn"
+                data-tab="approved-appts"
+                id="tab-approved-appts"
+              >
+                Approved
+              </button>
+              <button
+                class="tab-btn"
+                data-tab="completed-appts"
+                id="tab-completed-appts"
+              >
+                Completed
+              </button>
+              <button
+                class="tab-btn"
+                data-tab="cancelled-appts"
+                id="tab-cancelled-appts"
+              >
+                Cancelled
+              </button>
+            </div>
+
+            <div class="card elevated-card">
+              <div class="card-body">
+                <div class="appointment-list" id="appointments-list">
+                  <div class="loading-overlay">
+                    <div class="loader"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== FIND DOCTOR SECTION ===== -->
+          <div class="content-section" id="section-find-doctor">
+            <div class="page-header">
+              <h1>Find a Doctor</h1>
+              <p>
+                Search and filter doctors by specialization and availability.
+              </p>
+            </div>
+
+            <div class="filter-bar" id="doctor-filter-bar">
+              <select id="filter-specialization">
+                <option value="all">All Specializations</option>
+              </select>
+              <button class="btn btn-primary btn-sm" id="filter-search-btn">
+                <i class="fas fa-search"></i> Search
+              </button>
+              <button class="btn btn-secondary btn-sm" id="filter-reset-btn">
+                <i class="fas fa-undo"></i> Reset
+              </button>
+            </div>
+
+            <div class="doctor-cards" id="doctor-list">
+              <div class="loading-overlay">
+                <div class="loader"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PROFILE SECTION ===== -->
+          <div class="content-section" id="section-profile">
+            <div class="page-header">
+              <h1>My Profile</h1>
+              <p>Manage your personal information and medical records.</p>
+            </div>
+
+            <div class="profile-header" id="profile-header-display">
+              <div class="profile-avatar" id="profile-avatar-display">
+                <span id="profile-initials">P</span>
+              </div>
+              <div class="profile-info">
+                <h2 id="profile-name-display">Patient Name</h2>
+                <p id="profile-email-display">patient@example.com</p>
+              </div>
+            </div>
+
+            <div class="card elevated-card">
+              <div class="card-header">
+                <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+              </div>
+              <div class="card-body">
+                <form id="profile-form">
+                  <div class="profile-form-grid">
+                    <div class="form-group">
+                      <label for="profile-name">Full Name</label>
+                      <input
+                        type="text"
+                        id="profile-name"
+                        placeholder="Your full name"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="profile-phone">Phone Number</label>
+                      <input
+                        type="tel"
+                        id="profile-phone"
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="profile-age">Age</label>
+                      <input
+                        type="number"
+                        id="profile-age"
+                        placeholder="25"
+                        min="1"
+                        max="120"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="profile-gender">Gender</label>
+                      <select id="profile-gender">
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="profile-blood">Blood Group</label>
+                      <select id="profile-blood">
+                        <option value="">Select blood group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="profile-address">Address</label>
+                      <input
+                        type="text"
+                        id="profile-address"
+                        placeholder="Your address"
+                      />
+                    </div>
+                    <div class="form-group full-width">
+                      <label for="profile-medical-history"
+                        >Medical History</label
+                      >
+                      <textarea
+                        id="profile-medical-history"
+                        rows="4"
+                        placeholder="Any allergies, chronic conditions, previous surgeries..."
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div class="action-row action-row-wrap">
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      id="save-profile-btn"
+                    >
+                      <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      id="cancel-profile-btn"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- ===== APPOINTMENTS SECTION ===== -->
-        <div class="content-section" id="section-appointments">
-          <div class="page-header">
-            <h1>My Appointments</h1>
-            <p>View and manage all your appointment history.</p>
-          </div>
-
-          <div class="tabs">
-            <button class="tab-btn active" data-tab="all-appts" id="tab-all-appts">
-              All
-            </button>
-            <button class="tab-btn" data-tab="pending-appts" id="tab-pending-appts">
-              Pending
-            </button>
-            <button class="tab-btn" data-tab="approved-appts" id="tab-approved-appts">
-              Approved
-            </button>
-            <button class="tab-btn" data-tab="completed-appts" id="tab-completed-appts">
-              Completed
-            </button>
-            <button class="tab-btn" data-tab="cancelled-appts" id="tab-cancelled-appts">
-              Cancelled
-            </button>
-          </div>
-
-          <div class="card">
-            <div class="card-body">
-              <div class="appointment-list" id="appointments-list">
-                <div class="loading-overlay">
-                  <div class="loader"></div>
-                </div>
-              </div>
-            </div>
+    <!-- Doctor Profile Modal -->
+    <div class="modal-overlay" id="doctor-profile-modal">
+      <div class="modal doctor-profile-modal-content">
+        <div class="modal-header doctor-profile-modal-header">
+          <h3><i class="fas fa-user-md"></i> Doctor Profile</h3>
+          <button class="modal-close" id="close-doctor-profile-modal">
+            &times;
+          </button>
+        </div>
+        <div
+          class="modal-body doctor-profile-modal-body"
+          id="doctor-profile-body"
+        >
+          <div class="loading-overlay">
+            <div class="loader"></div>
           </div>
         </div>
-
-        <!-- ===== FIND DOCTOR SECTION ===== -->
-        <div class="content-section" id="section-find-doctor">
-          <div class="page-header">
-            <h1>Find a Doctor</h1>
-            <p>
-              Search and filter doctors by specialization and availability.
-            </p>
-          </div>
-
-          <div class="filter-bar" id="doctor-filter-bar">
-            <select id="filter-specialization">
-              <option value="all">All Specializations</option>
-            </select>
-            <button class="btn btn-primary btn-sm" id="filter-search-btn">
-              <i class="fas fa-search"></i> Search
-            </button>
-            <button class="btn btn-secondary btn-sm" id="filter-reset-btn">
-              <i class="fas fa-undo"></i> Reset
-            </button>
-          </div>
-
-          <div class="doctor-cards" id="doctor-list">
-            <div class="loading-overlay">
-              <div class="loader"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== PROFILE SECTION ===== -->
-        <div class="content-section" id="section-profile">
-          <div class="page-header">
-            <h1>My Profile</h1>
-            <p>Manage your personal information and medical records.</p>
-          </div>
-
-          <div class="profile-header" id="profile-header-display">
-            <div class="profile-avatar" id="profile-avatar-display">
-              <span id="profile-initials">P</span>
-            </div>
-            <div class="profile-info">
-              <h2 id="profile-name-display">Patient Name</h2>
-              <p id="profile-email-display">patient@example.com</p>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h3><i class="fas fa-edit"></i> Edit Profile</h3>
-            </div>
-            <div class="card-body">
-              <form id="profile-form">
-                <div class="profile-form-grid">
-                  <div class="form-group">
-                    <label for="profile-name">Full Name</label>
-                    <input type="text" id="profile-name" placeholder="Your full name" />
-                  </div>
-                  <div class="form-group">
-                    <label for="profile-phone">Phone Number</label>
-                    <input type="tel" id="profile-phone" placeholder="+1 234 567 890" />
-                  </div>
-                  <div class="form-group">
-                    <label for="profile-age">Age</label>
-                    <input type="number" id="profile-age" placeholder="25" min="1" max="120" />
-                  </div>
-                  <div class="form-group">
-                    <label for="profile-gender">Gender</label>
-                    <select id="profile-gender">
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="profile-blood">Blood Group</label>
-                    <select id="profile-blood">
-                      <option value="">Select blood group</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="profile-address">Address</label>
-                    <input type="text" id="profile-address" placeholder="Your address" />
-                  </div>
-                  <div class="form-group full-width">
-                    <label for="profile-medical-history">Medical History</label>
-                    <textarea id="profile-medical-history" rows="4"
-                      placeholder="Any allergies, chronic conditions, previous surgeries..."></textarea>
-                  </div>
-                </div>
-                <div class="action-row action-row-wrap">
-                  <button type="submit" class="btn btn-primary" id="save-profile-btn">
-                    <i class="fas fa-save"></i> Save Changes
-                  </button>
-                  <button type="button" class="btn btn-secondary" id="cancel-profile-btn">
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        <div class="modal-footer doctor-profile-modal-footer">
+          <button class="btn btn-secondary" id="close-profile-btn">
+            Close
+          </button>
+          <button class="btn btn-primary" id="book-from-profile-btn">
+            <i class="fas fa-calendar-plus"></i> Book Appointment
+          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Doctor Profile Modal -->
-  <div class="modal-overlay" id="doctor-profile-modal">
-    <div class="modal doctor-profile-modal-content">
-      <div class="modal-header doctor-profile-modal-header">
-        <h3><i class="fas fa-user-md"></i> Doctor Profile</h3>
-        <button class="modal-close" id="close-doctor-profile-modal">&times;</button>
-      </div>
-      <div class="modal-body doctor-profile-modal-body" id="doctor-profile-body">
-        <div class="loading-overlay">
-          <div class="loader"></div>
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="booking-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Book Appointment</h3>
+          <button class="modal-close" id="close-booking-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="booking-doctor-info" class="booking-doctor-info">
+            <div class="doctor-photo booking-doctor-photo">
+              <span class="placeholder" id="booking-doc-avatar">👨‍⚕️</span>
+            </div>
+            <div>
+              <h4 id="booking-doc-name">Doctor Name</h4>
+              <span class="doctor-specialization" id="booking-doc-spec"
+                >Specialization</span
+              >
+            </div>
+          </div>
+          <form id="booking-form">
+            <input type="hidden" id="booking-doctor-id" />
+            <div class="form-group">
+              <label for="booking-date">Appointment Date</label>
+              <input type="date" id="booking-date" required />
+            </div>
+            <div class="form-group">
+              <label for="booking-time">Preferred Time</label>
+              <select id="booking-time" required>
+                <option value="">Select a time slot</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="booking-reason">Reason for Visit</label>
+              <textarea
+                id="booking-reason"
+                rows="3"
+                placeholder="Describe your symptoms or reason for visit..."
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-booking-btn">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirm-booking-btn">
+            <i class="fas fa-check"></i> Confirm Booking
+          </button>
         </div>
       </div>
-      <div class="modal-footer doctor-profile-modal-footer">
-        <button class="btn btn-secondary" id="close-profile-btn">
-          Close
-        </button>
-        <button class="btn btn-primary" id="book-from-profile-btn">
-          <i class="fas fa-calendar-plus"></i> Book Appointment
-        </button>
-      </div>
     </div>
-  </div>
 
-  <!-- Booking Modal -->
-  <div class="modal-overlay" id="booking-modal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3>Book Appointment</h3>
-        <button class="modal-close" id="close-booking-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div id="booking-doctor-info" class="booking-doctor-info">
-          <div class="doctor-photo booking-doctor-photo">
-            <span class="placeholder" id="booking-doc-avatar">👨‍⚕️</span>
-          </div>
-          <div>
-            <h4 id="booking-doc-name">Doctor Name</h4>
-            <span class="doctor-specialization" id="booking-doc-spec">Specialization</span>
-          </div>
+    <!-- Reschedule Modal -->
+    <div class="modal-overlay" id="reschedule-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Reschedule Appointment</h3>
+          <button class="modal-close" id="close-reschedule-modal">
+            &times;
+          </button>
         </div>
-        <form id="booking-form">
-          <input type="hidden" id="booking-doctor-id" />
-          <div class="form-group">
-            <label for="booking-date">Appointment Date</label>
-            <input type="date" id="booking-date" required />
-          </div>
-          <div class="form-group">
-            <label for="booking-time">Preferred Time</label>
-            <select id="booking-time" required>
-              <option value="">Select a time slot</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="booking-reason">Reason for Visit</label>
-            <textarea id="booking-reason" rows="3"
-              placeholder="Describe your symptoms or reason for visit..."></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="cancel-booking-btn">
-          Cancel
-        </button>
-        <button class="btn btn-primary" id="confirm-booking-btn">
-          <i class="fas fa-check"></i> Confirm Booking
-        </button>
+        <div class="modal-body">
+          <form id="reschedule-form">
+            <input type="hidden" id="reschedule-apt-id" />
+            <div class="form-group">
+              <label for="reschedule-date">New Date</label>
+              <input type="date" id="reschedule-date" required />
+            </div>
+            <div class="form-group">
+              <label for="reschedule-time">New Time</label>
+              <input type="time" id="reschedule-time" required />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-reschedule-btn">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirm-reschedule-btn">
+            <i class="fas fa-calendar-alt"></i> Reschedule
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Reschedule Modal -->
-  <div class="modal-overlay" id="reschedule-modal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3>Reschedule Appointment</h3>
-        <button class="modal-close" id="close-reschedule-modal">
-          &times;
-        </button>
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notification-panel">
+      <div class="notification-panel-header">
+        <h3>Notifications</h3>
+        <div>
+          <button class="btn btn-sm btn-secondary" id="mark-all-read-btn">
+            Mark all read
+          </button>
+          <button
+            class="modal-close notification-close-spaced"
+            id="close-notif-panel"
+          >
+            &times;
+          </button>
+        </div>
       </div>
-      <div class="modal-body">
-        <form id="reschedule-form">
-          <input type="hidden" id="reschedule-apt-id" />
-          <div class="form-group">
-            <label for="reschedule-date">New Date</label>
-            <input type="date" id="reschedule-date" required />
-          </div>
-          <div class="form-group">
-            <label for="reschedule-time">New Time</label>
-            <input type="time" id="reschedule-time" required />
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="cancel-reschedule-btn">
-          Cancel
-        </button>
-        <button class="btn btn-primary" id="confirm-reschedule-btn">
-          <i class="fas fa-calendar-alt"></i> Reschedule
-        </button>
+      <div class="notification-list" id="notification-list">
+        <div class="empty-state">
+          <div class="empty-icon">🔔</div>
+          <h3>No notifications</h3>
+          <p>You're all caught up!</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Notification Panel -->
-  <div class="notification-panel" id="notification-panel">
-    <div class="notification-panel-header">
-      <h3>Notifications</h3>
-      <div>
-        <button class="btn btn-sm btn-secondary" id="mark-all-read-btn">
-          Mark all read
-        </button>
-        <button class="modal-close notification-close-spaced" id="close-notif-panel">
-          &times;
-        </button>
-      </div>
-    </div>
-    <div class="notification-list" id="notification-list">
-      <div class="empty-state">
-        <div class="empty-icon">🔔</div>
-        <h3>No notifications</h3>
-        <p>You're all caught up!</p>
-      </div>
-    </div>
-  </div>
+    <div class="toast-container" id="toast-container"></div>
 
-  <div class="toast-container" id="toast-container"></div>
-
-  <script src="../js/utils.js"></script>
-  <script src="../js/patient.js"></script>
-</body>
-
+    <script src="../js/utils.js"></script>
+    <script src="../js/patient.js"></script>
+  </body>
 </html>
