@@ -47,12 +47,16 @@ function setupPatientUI(user) {
   if (nameEl) nameEl.textContent = user.name;
   if (avatarEl) avatarEl.textContent = user.name.charAt(0).toUpperCase();
   if (greetingEl)
-    greetingEl.textContent = `${getGreeting()}, ${user.name.split(" ")[0]}.`;
+    greetingEl.innerHTML = `<span class="welcome-wave">👋</span> ${getGreeting()}, ${user.name.split(" ")[0]}.`;
+
+  // Populate date widget
+  initDateWidget();
 
   // Setup booking modal events
   setupBookingModal();
   setupRescheduleModal();
   setupDoctorProfileModal();
+  setupEmergencyBooking();
 
   // Mark all read
   const markAllBtn = document.getElementById("mark-all-read-btn");
@@ -71,18 +75,47 @@ function setupPatientUI(user) {
   }
 }
 
+function initDateWidget() {
+  const now = new Date();
+  const dayEl = document.getElementById("widget-day");
+  const monthEl = document.getElementById("widget-month");
+  const yearEl = document.getElementById("widget-year");
+
+  if (dayEl) dayEl.textContent = now.getDate();
+  if (monthEl) monthEl.textContent = now.toLocaleDateString("en-US", { month: "long" });
+  if (yearEl) yearEl.textContent = now.getFullYear();
+}
+
+function animateCounter(element, target) {
+  if (!element) return;
+  const duration = 800;
+  const start = parseInt(element.textContent) || 0;
+  if (start === target) { element.textContent = target; return; }
+  const startTime = performance.now();
+
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(start + (target - start) * eased);
+    element.textContent = current;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
 // ===== DASHBOARD =====
 async function loadDashboard() {
   const result = await apiCall(patientEndpoint("getDashboard"));
 
   if (result.success) {
     const d = result.dashboard;
-    document.getElementById("stat-total").textContent = d.total_appointments;
-    document.getElementById("stat-upcoming").textContent =
-      d.upcoming_appointments.length;
-    document.getElementById("stat-pending").textContent =
-      d.pending_appointments.length;
-    document.getElementById("stat-notifs").textContent = d.unread_notifications;
+
+    // Animate stat counters
+    animateCounter(document.getElementById("stat-total"), d.total_appointments);
+    animateCounter(document.getElementById("stat-upcoming"), d.upcoming_appointments.length);
+    animateCounter(document.getElementById("stat-pending"), d.pending_appointments.length);
+    animateCounter(document.getElementById("stat-notifs"), d.unread_notifications);
 
     setBadgeValue("notif-count", d.unread_notifications, "flex");
     setBadgeValue("pending-badge", d.pending_appointments.length, "inline");
@@ -683,7 +716,7 @@ async function loadTimeSlots(doctorId, date) {
     patientEndpoint("getDoctorAvailability", `&doctor_id=${doctorId}`),
   );
 
-  const [year, month, day] = date.split('-');
+  const [year, month, day] = date.split("-");
   const dateObj = new Date(year, month - 1, day);
   const dayOfWeek = dateObj.toLocaleDateString("en-US", {
     weekday: "long",
@@ -693,7 +726,7 @@ async function loadTimeSlots(doctorId, date) {
   if (result.success && result.availability && result.availability.length > 0) {
     // If the doctor has set their availability at least once (records exist)
     const dayAvail = result.availability.find(
-      (a) => a.day_of_week === dayOfWeek
+      (a) => a.day_of_week === dayOfWeek,
     );
     if (dayAvail && dayAvail.is_available == 1) {
       slots = generateTimeSlots(dayAvail.start_time, dayAvail.end_time);
@@ -704,9 +737,10 @@ async function loadTimeSlots(doctorId, date) {
     slots = generateTimeSlots("09:00", "17:00");
   }
 
-  timeSelect.innerHTML = '';
+  timeSelect.innerHTML = "";
   if (slots.length === 0) {
-    timeSelect.innerHTML = '<option value="">Doctor is not available on this day</option>';
+    timeSelect.innerHTML =
+      '<option value="">Doctor is not available on this day</option>';
   } else {
     timeSelect.innerHTML = '<option value="">Select a time slot</option>';
     slots.forEach((slot) => {
@@ -843,3 +877,157 @@ async function markNotifRead(notificationId) {
   loadNotifications();
   loadDashboard();
 }
+
+// ===== AI EMERGENCY BOOKING =====
+function setEmergencyStep(stepNum) {
+  const steps = document.querySelectorAll('.emergency-step');
+  const connectors = document.querySelectorAll('.step-connector');
+
+  steps.forEach((step) => {
+    const sNum = parseInt(step.dataset.step);
+    step.classList.remove('active', 'completed');
+    if (sNum < stepNum) step.classList.add('completed');
+    else if (sNum === stepNum) step.classList.add('active');
+  });
+
+  connectors.forEach((conn, idx) => {
+    conn.classList.toggle('active', idx < stepNum - 1);
+  });
+}
+
+function setupEmergencyBooking() {
+  const btn = document.getElementById("ai-emergency-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    const symptomsInput = document
+      .getElementById("emergency-symptoms")
+      .value.trim();
+    if (!symptomsInput) {
+      showToast("Please describe your symptoms first.", "error");
+      return;
+    }
+
+    // Step 2: Analyzing
+    setEmergencyStep(2);
+    document.getElementById("emergency-input-area").style.display = "none";
+    const loadingDiv = document.getElementById("emergency-loading");
+    const resultDiv = document.getElementById("emergency-result");
+
+    loadingDiv.style.display = "flex";
+    resultDiv.style.display = "none";
+
+    try {
+      const result = await apiCall("emergency.php?action=book", {
+        method: "POST",
+        body: JSON.stringify({ symptoms: symptomsInput }),
+      });
+
+      loadingDiv.style.display = "none";
+
+      if (result.success && result.data) {
+        // Step 3: Booked
+        setEmergencyStep(3);
+        const d = result.data;
+
+        let urgencyColor = "#f59e0b";
+        let urgencyBg = "rgba(245, 158, 11, 0.1)";
+        let urgencyIcon = "fa-exclamation-circle";
+        if (d.urgency === "Low") {
+          urgencyColor = "#10b981";
+          urgencyBg = "rgba(16, 185, 129, 0.1)";
+          urgencyIcon = "fa-info-circle";
+        }
+        if (d.urgency === "Critical") {
+          urgencyColor = "#ef4444";
+          urgencyBg = "rgba(239, 68, 68, 0.1)";
+          urgencyIcon = "fa-exclamation-triangle";
+        }
+
+        resultDiv.innerHTML = `
+          <div class="booking-success-ticket">
+            <div class="ticket-header">
+              <span class="urgency-badge" style="background: ${urgencyBg}; color: ${urgencyColor}; border: 1px solid ${urgencyColor}30;">
+                <i class="fas ${urgencyIcon}"></i> ${d.urgency} Priority
+              </span>
+              <span class="dept-badge"><i class="fas fa-stethoscope"></i> ${d.department}</span>
+            </div>
+            <div class="ticket-body">
+              <div class="ticket-row">
+                <div class="ticket-col">
+                  <small>Assigned Doctor</small>
+                  <strong><i class="fas fa-user-md"></i> ${d.doctor_name}</strong>
+                </div>
+              </div>
+              <div class="ticket-row">
+                <div class="ticket-col">
+                  <small>Date</small>
+                  <strong><i class="far fa-calendar-alt"></i> ${formatDate(d.date)}</strong>
+                </div>
+                <div class="ticket-col">
+                  <small>Time</small>
+                  <strong><i class="far fa-clock"></i> ${formatTime(d.time)}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="ticket-footer">
+              <p class="success-msg"><i class="fas fa-check-circle"></i> Booking confirmed instantly by AI Triage</p>
+            </div>
+          </div>
+          <button class="btn btn-outline" style="width: calc(100% - 56px); margin: 12px 28px 24px; border-radius: var(--radius-lg); padding: 13px;" onclick="resetEmergencyBooking()">
+            <i class="fas fa-redo"></i> New Emergency Request
+          </button>
+        `;
+        resultDiv.style.display = "block";
+        showToast(result.message, "success", 5000);
+        loadDashboard();
+        loadAppointments("all");
+      } else {
+        setEmergencyStep(1);
+        let debugHtml = '';
+        if (result.debug) {
+          debugHtml = `<div style="margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:12px;text-align:left;">
+            <strong>Debug Info:</strong><br>
+            Department matched: ${result.debug.department || 'N/A'}<br>
+            Doctors found: ${result.debug.doctors_found || 0}<br>
+            ${(result.debug.doctor_details || []).map(d => `• ${d.name} (${d.specialization}) - ${d.availability_count} availability records`).join('<br>')}
+          </div>`;
+        }
+        resultDiv.innerHTML = `
+          <div class="emergency-error">
+            <i class="fas fa-times-circle"></i>
+            <h5>Booking Failed</h5>
+            <p>${result.message}</p>
+            ${debugHtml}
+          </div>
+          <button class="btn btn-outline" style="width: calc(100% - 56px); margin: 12px 28px 24px; border-radius: var(--radius-lg); padding: 13px;" onclick="resetEmergencyBooking()">
+            <i class="fas fa-redo"></i> Try Again
+          </button>
+        `;
+        resultDiv.style.display = "block";
+      }
+    } catch (err) {
+      loadingDiv.style.display = "none";
+      setEmergencyStep(1);
+      resultDiv.innerHTML = `
+        <div class="emergency-error">
+          <i class="fas fa-wifi"></i>
+          <h5>Connection Error</h5>
+          <p>Could not connect to the triage system. Please try again or call emergency services.</p>
+        </div>
+        <button class="btn btn-outline" style="width: calc(100% - 56px); margin: 12px 28px 24px; border-radius: var(--radius-lg); padding: 13px;" onclick="resetEmergencyBooking()">
+          <i class="fas fa-redo"></i> Try Again
+        </button>
+      `;
+      resultDiv.style.display = "block";
+    }
+  });
+}
+
+function resetEmergencyBooking() {
+  document.getElementById("emergency-symptoms").value = "";
+  document.getElementById("emergency-result").style.display = "none";
+  document.getElementById("emergency-input-area").style.display = "flex";
+  setEmergencyStep(1);
+}
+
