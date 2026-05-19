@@ -357,6 +357,82 @@ img {
   transition: var(--transition);
 }
 
+.feature-card.is-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.nav-scrolled {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08) !important;
+}
+/* Auth OTP Styles */
+.otp-message-container {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.otp-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 40px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 22px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.otp-icon-box.dev {
+  background: var(--primary-lighter, #e0f4f4);
+}
+
+.otp-icon-box.prod {
+  background: #ede9fe;
+}
+
+.otp-title {
+  margin: 0 0 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.otp-text {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.otp-subtext {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.otp-strong {
+  color: var(--text-primary);
+}
+
+.otp-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  margin-top: 6px;
+  transition: 0.2s;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.otp-btn:hover {
+  background: #6d28d9;
+  color: #fff;
+}
 .feature-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
