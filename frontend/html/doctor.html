@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Doctor Dashboard - Manage your appointments, patients, and availability."
+    />
+    <title>Doctor Dashboard | Herald Clinical Sanctuary</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="dashboard-layout">
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon"><i class="fas fa-shield-heart"></i></div>
+            <div class="logo-text">Herald Clinical<span>Sanctuary</span></div>
+          </div>
+        </div>
+        <nav class="sidebar-nav">
+          <a
+            href="#"
+            class="nav-item active"
+            data-section="dashboard"
+            id="nav-dashboard"
+          >
+            <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+            Dashboard
+          </a>
+          <a
+            href="#"
+            class="nav-item"
+            data-section="appointments"
+            id="nav-appointments"
+          >
+            <span class="nav-icon"><i class="fas fa-calendar-check"></i></span>
+            Appointments
+            <span class="nav-badge is-hidden" id="pending-badge">0</span>
+          </a>
+          <a
+            href="#"
+            class="nav-item"
+            data-section="patients"
+            id="nav-patients"
+          >
+            <span class="nav-icon"><i class="fas fa-users"></i></span> Patients
+          </a>
+          <a
+            href="#"
+            class="nav-item"
+            data-section="availability"
+            id="nav-availability"
+          >
+            <span class="nav-icon"><i class="fas fa-clock"></i></span>
+            Availability
+          </a>
+          <a href="#" class="nav-item" data-section="profile" id="nav-profile">
+            <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
+            Profile
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="#" class="nav-item" id="logout-btn">
+            <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+            Logout
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-toggle" id="mobile-toggle">
+              <i class="fas fa-bars"></i>
+            </button>
+            <div class="search-bar">
+              <span class="search-icon"><i class="fas fa-search"></i></span>
+              <input
+                type="text"
+                placeholder="Search patients..."
+                id="global-search"
+              />
+            </div>
+          </div>
+          <div class="topbar-right">
+            <button class="notification-btn" id="notification-btn">
+              <i class="fas fa-bell"></i>
+              <span class="badge is-hidden" id="notif-count">0</span>
+            </button>
+            <div class="user-info" id="user-info-display">
+              <div class="user-details">
+                <div class="user-name" id="topbar-name">Doctor</div>
+                <div class="user-role">DOCTOR</div>
+              </div>
+              <div class="user-avatar" id="topbar-avatar">D</div>
+            </div>
+          </div>
+        </header>
+
+        <div class="page-content">
+          <!-- ===== DASHBOARD ===== -->
+          <div class="content-section active" id="section-dashboard">
+            <div class="page-header">
+              <h1 id="greeting-text">Good morning, Doctor.</h1>
+              <p>Here's your schedule and patient overview for today.</p>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card primary">
+                <div class="stat-header">
+                  <div class="stat-icon">
+                    <i class="fas fa-calendar-day"></i>
+                  </div>
+                  <span class="stat-label">Today's Appointments</span>
+                </div>
+                <div class="stat-value" id="stat-today">0</div>
+              </div>
+              <div class="stat-card warning">
+                <div class="stat-header">
+                  <div class="stat-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                  </div>
+                  <span class="stat-label">Pending Requests</span>
+                </div>
+                <div class="stat-value" id="stat-pending">0</div>
+              </div>
+              <div class="stat-card success">
+                <div class="stat-header">
+                  <div class="stat-icon"><i class="fas fa-users"></i></div>
+                  <span class="stat-label">Total Patients</span>
+                </div>
+                <div class="stat-value" id="stat-patients">0</div>
+              </div>
+              <div class="stat-card info">
+                <div class="stat-header">
+                  <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                  <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-value" id="stat-completed">0</div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h3><i class="fas fa-calendar-alt"></i> Today's Schedule</h3>
+                </div>
+                <div class="card-body">
+                  <div class="appointment-list" id="today-schedule">
+                    <div class="empty-state">
+                      <div class="empty-icon">📅</div>
+                      <h3>No appointments today</h3>
+                      <p>Enjoy your free day!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3><i class="fas fa-clock"></i> Pending Requests</h3>
+                  <a
+                    href="#"
+                    class="btn btn-sm btn-secondary"
+                    data-nav="appointments"
+                    >View All</a
+                  >
+                </div>
+                <div class="card-body">
+                  <div class="appointment-list" id="pending-requests">
+                    <div class="empty-state">
+                      <div class="empty-icon">✅</div>
+                      <h3>No pending requests</h3>
+                      <p>All caught up!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== APPOINTMENTS ===== -->
+          <div class="content-section" id="section-appointments">
+            <div class="page-header">
+              <h1>Appointments</h1>
+              <p>Manage all your patient appointments.</p>
+            </div>
+
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="all" id="tab-all">
+                All
+              </button>
+              <button class="tab-btn" data-tab="pending" id="tab-pending">
+                Pending
+              </button>
+              <button class="tab-btn" data-tab="approved" id="tab-approved">
+                Approved
+              </button>
+              <button class="tab-btn" data-tab="completed" id="tab-completed">
+                Completed
+              </button>
+              <button class="tab-btn" data-tab="cancelled" id="tab-cancelled">
+                Cancelled
+              </button>
+            </div>
+
+            <div class="card">
+              <div class="card-body card-body-flush">
+                <div class="table-wrapper">
+                  <table class="data-table" id="appointments-table">
+                    <thead>
+                      <tr>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="appointments-tbody">
+                      <tr>
+                        <td colspan="6" class="loading-overlay">
+                          <div class="loader"></div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PATIENTS ===== -->
+          <div class="content-section" id="section-patients">
+            <div class="page-header">
+              <h1>My Patients</h1>
+              <p>View details of patients who have visited you.</p>
+            </div>
+
+            <div class="card">
+              <div class="card-body card-body-flush">
+                <div class="table-wrapper">
+                  <table class="data-table" id="patients-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Blood Group</th>
+                      </tr>
+                    </thead>
+                    <tbody id="patients-tbody">
+                      <tr>
+                        <td colspan="6" class="loading-overlay">
+                          <div class="loader"></div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== AVAILABILITY ===== -->
+          <div class="content-section" id="section-availability">
+            <div class="page-header">
+              <h1>Set Availability</h1>
+              <p>
+                Configure your weekly schedule so patients can book
+                appointments.
+              </p>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-clock"></i> Weekly Schedule</h3>
+              </div>
+              <div class="card-body">
+                <form id="availability-form">
+                  <div class="schedule-grid" id="schedule-grid">
+                    <!-- Populated via JS -->
+                  </div>
+                  <div class="mt-24">
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      id="save-availability-btn"
+                    >
+                      <i class="fas fa-save"></i> Save Schedule
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PROFILE ===== -->
+          <div class="content-section" id="section-profile">
+            <div class="page-header">
+              <h1>Doctor Profile</h1>
+              <p>Manage your profile information and photo.</p>
+            </div>
+
+            <div class="profile-header" id="profile-header-display">
+              <div class="profile-avatar" id="profile-avatar-display">
+                <span id="profile-initials">D</span>
+                <div class="photo-upload-overlay" id="photo-upload-trigger">
+                  <i class="fas fa-camera"></i> Change
+                </div>
+              </div>
+              <div class="profile-info">
+                <h2 id="profile-name-display">Doctor Name</h2>
+                <p id="profile-email-display">doctor@example.com</p>
+                <span
+                  class="badge badge-approved profile-status-badge"
+                  id="profile-status-badge"
+                ></span>
+              </div>
+              <input
+                type="file"
+                id="photo-upload-input"
+                class="file-input-hidden"
+                accept="image/*"
+              />
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+              </div>
+              <div class="card-body">
+                <form id="doctor-profile-form">
+                  <div class="profile-form-grid">
+                    <div class="form-group">
+                      <label for="doc-name">Full Name</label>
+                      <input
+                        type="text"
+                        id="doc-name"
+                        placeholder="Dr. John Smith"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="doc-phone">Phone</label>
+                      <input
+                        type="tel"
+                        id="doc-phone"
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="doc-specialization">Specialization</label>
+                      <select id="doc-specialization">
+                        <option value="">Select</option>
+                        <option value="General Physician">
+                          General Physician
+                        </option>
+                        <option value="Cardiologist">Cardiologist</option>
+                        <option value="Dermatologist">Dermatologist</option>
+                        <option value="Neurologist">Neurologist</option>
+                        <option value="Orthopedic">Orthopedic</option>
+                        <option value="Pediatrician">Pediatrician</option>
+                        <option value="Psychiatrist">Psychiatrist</option>
+                        <option value="Gynecologist">Gynecologist</option>
+                        <option value="Ophthalmologist">Ophthalmologist</option>
+                        <option value="ENT Specialist">ENT Specialist</option>
+                        <option value="Dentist">Dentist</option>
+                        <option value="Urologist">Urologist</option>
+                        <option value="Oncologist">Oncologist</option>
+                        <option value="Endocrinologist">Endocrinologist</option>
+                        <option value="Gastroenterologist">
+                          Gastroenterologist
+                        </option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="doc-qualification">Qualification</label>
+                      <input
+                        type="text"
+                        id="doc-qualification"
+                        placeholder="MBBS, MD"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="doc-nmc">NMC Number</label>
+                      <input
+                        type="text"
+                        id="doc-nmc"
+                        placeholder="12345"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="doc-experience">Experience (years)</label>
+                      <input
+                        type="number"
+                        id="doc-experience"
+                        placeholder="5"
+                        min="0"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="doc-fee">Consultation Fee (Rs)</label>
+                      <input
+                        type="number"
+                        id="doc-fee"
+                        placeholder="100"
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
+                    <div class="form-group full-width">
+                      <label for="doc-bio">Bio</label>
+                      <textarea
+                        id="doc-bio"
+                        rows="4"
+                        placeholder="Write a short bio about yourself..."
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div class="action-row">
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      id="save-doc-profile-btn"
+                    >
+                      <i class="fas fa-save"></i> Save Profile
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notification-panel">
+      <div class="notification-panel-header">
+        <h3>Notifications</h3>
+        <div>
+          <button class="btn btn-sm btn-secondary" id="mark-all-read-btn">
+            Mark all read
+          </button>
+          <button class="modal-close" id="close-notif-panel">&times;</button>
+        </div>
+      </div>
+      <div class="notification-list" id="notification-list"></div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/doctor.js"></script>
+  </body>
+</html>
