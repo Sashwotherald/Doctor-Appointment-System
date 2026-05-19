@@ -474,6 +474,40 @@
   gap: 6px;
 }
 
+.urgency-low {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.urgency-medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.urgency-critical {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.emergency-btn-full {
+  width: calc(100% - 56px);
+  margin: 12px 28px 24px;
+  border-radius: var(--radius-lg);
+  padding: 13px;
+}
+
+.emergency-debug-info {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: left;
+}
+
 .dept-badge {
   color: var(--text-secondary);
   font-size: 13px;
@@ -527,6 +561,21 @@
 .ticket-col strong i {
   color: var(--primary);
   font-size: 14px;
+}
+
+/* Utilities */
+.d-none {
+  display: none !important;
+}
+.d-block {
+  display: block !important;
+}
+.d-flex {
+  display: flex !important;
+}
+.flex-wrap-start {
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .ticket-footer {

@@ -123,9 +123,13 @@ function setBadgeValue(elementId, count, displayMode = "inline") {
 
   if (count > 0) {
     badge.textContent = count;
-    badge.style.display = displayMode;
+    badge.classList.remove("d-none");
+    badge.classList.add(
+      displayMode === "inline-block" ? "d-inline-block" : "d-block",
+    );
   } else {
-    badge.style.display = "none";
+    badge.classList.add("d-none");
+    badge.classList.remove("d-inline-block", "d-block");
   }
 }
 
@@ -146,16 +150,28 @@ function validatePassword(password) {
   if (password.length < 6) {
     return { valid: false, message: "Password must be at least 6 characters" };
   }
-  if (!/[A-Za-z]/.test(password)) {
+  if (!/[a-zA-Z]/.test(password)) {
     return {
       valid: false,
       message: "Password must contain at least one letter",
+    };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must contain at least one capital letter",
     };
   }
   if (!/[0-9]/.test(password)) {
     return {
       valid: false,
       message: "Password must contain at least one number",
+    };
+  }
+  if (!/[^a-zA-Z0-9]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must contain at least one special character",
     };
   }
   return { valid: true };
@@ -506,25 +522,35 @@ function initGlobalSearch() {
     // Filter table rows inside the active section
     const rows = activeSection.querySelectorAll("tbody tr");
     rows.forEach((row) => {
-      if (row.querySelector(".empty-state") || row.querySelector(".loading-overlay") || row.querySelector(".loader")) {
+      if (
+        row.querySelector(".empty-state") ||
+        row.querySelector(".loading-overlay") ||
+        row.querySelector(".loader")
+      ) {
         return; // Don't filter empty state / loading rows
       }
 
-      const searchTarget = row.querySelector("strong") || row.firstElementChild || row;
+      const searchTarget =
+        row.querySelector("strong") || row.firstElementChild || row;
       const text = searchTarget.textContent.toLowerCase();
       if (text.includes(term)) {
-        row.style.display = "";
+        row.style.display = ""; // Using inline CSS for row/table flow
       } else {
         row.style.display = "none";
       }
     });
 
     // Filter cards/list items if any (e.g. today's schedule)
-    const cards = activeSection.querySelectorAll(".appointment-item, .doctor-card");
+    const cards = activeSection.querySelectorAll(
+      ".appointment-item, .doctor-card",
+    );
     cards.forEach((card) => {
       if (card.querySelector(".empty-state")) return;
 
-      const searchTarget = card.querySelector('.doctor-info h4') || card.querySelector('.appointment-details h4') || card;
+      const searchTarget =
+        card.querySelector(".doctor-info h4") ||
+        card.querySelector(".appointment-details h4") ||
+        card;
       const text = searchTarget.textContent.toLowerCase();
       if (text.includes(term)) {
         card.style.display = "";
