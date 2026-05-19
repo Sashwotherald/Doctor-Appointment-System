@@ -109,39 +109,39 @@ function verifyPassword($password, $hash) {
 // Password Reset Functions (Forgot Password Feature)
 // =====================================================
 
-// ----- Create a password-reset token for the given user -----
-function createPasswordResetToken($userId) {
+// ----- Create a password-reset OTP for the given user -----
+function createPasswordResetOtp($userId) {
     $pdo = getDBConnection();
 
-    // Invalidate any previous unused tokens for this user
+    // Invalidate any previous unused otps for this user
     $stmt = $pdo->prepare("UPDATE password_resets SET used = 1 WHERE user_id = :user_id AND used = 0");
     $stmt->execute([':user_id' => $userId]);
 
-    // Generate a secure random token and set 1-hour expiry
+    // Generate a 6-digit OTP and set 1-hour expiry
     // Use MySQL's DATE_ADD(NOW(), INTERVAL 1 HOUR) so that creation and
     // validation both rely on the same MySQL clock (avoids PHP ↔ MySQL timezone mismatches).
-    $token = bin2hex(random_bytes(32));
+    $otp = sprintf("%06d", mt_rand(1, 999999));
 
-    $stmt = $pdo->prepare("INSERT INTO password_resets (user_id, token, expires_at) VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+    $stmt = $pdo->prepare("INSERT INTO password_resets (user_id, otp, expires_at) VALUES (:user_id, :otp, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
     $stmt->execute([
         ':user_id' => $userId,
-        ':token' => $token
+        ':otp' => $otp
     ]);
 
-    return $token;
+    return $otp;
 }
 
-// ----- Validate a reset token (must exist, not expired, not used) -----
-function validateResetToken($token) {
+// ----- Validate a reset OTP (must exist, not expired, not used) -----
+function validateResetOtp($otp) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT * FROM password_resets WHERE token = :token AND used = 0 AND expires_at > NOW()");
-    $stmt->execute([':token' => $token]);
+    $stmt = $pdo->prepare("SELECT * FROM password_resets WHERE otp = :otp AND used = 0 AND expires_at > NOW()");
+    $stmt->execute([':otp' => $otp]);
     return $stmt->fetch();
 }
 
-// ----- Mark a token as used after the password has been changed -----
-function markTokenUsed($token) {
+// ----- Mark an OTP as used after the password has been changed -----
+function markOtpUsed($otp) {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("UPDATE password_resets SET used = 1 WHERE token = :token");
-    return $stmt->execute([':token' => $token]);
+    $stmt = $pdo->prepare("UPDATE password_resets SET used = 1 WHERE otp = :otp");
+    return $stmt->execute([':otp' => $otp]);
 }

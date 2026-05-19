@@ -85,9 +85,9 @@ switch ($action) {
         sendResponse(handleResetPassword(getJsonBody()));
         break;
 
-    case 'validateToken':
-        $token = $_GET['token'] ?? '';
-        sendResponse(handleValidateToken($token));
+    case 'validateOtp':
+        $otp = $_GET['otp'] ?? '';
+        sendResponse(handleValidateOtp($otp));
         break;
 
     default:

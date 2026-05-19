@@ -3,6 +3,9 @@
  * Application Constants
  */
 
+// Set Timezone
+date_default_timezone_set('Asia/Kathmandu');
+
 // User Roles
 define('ROLE_PATIENT', 'patient');
 define('ROLE_DOCTOR', 'doctor');

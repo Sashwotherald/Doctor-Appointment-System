@@ -1,14 +1,37 @@
 <?php
 /**
- * Appointment Model - Database operations for appointments
+ * Appointment Model
+ * Handles all database operations for the appointments table.
  */
 
 require_once __DIR__ . '/../config/db.php';
 
-function createAppointment($patientId, $doctorId, $date, $time, $reason = '') {
+// ----- Create a new appointment (checks for time conflicts) -----
+function createAppointment($patientId, $doctorId, $date, $time, $reason = '')
+{
     $pdo = getDBConnection();
-    
-    // Check for time conflicts
+
+    // Check if the doctor is available at the requested date and time
+    $dayOfWeek = date('l', strtotime($date));
+    $stmtAvail = $pdo->prepare("
+        SELECT id FROM doctor_availability
+        WHERE doctor_id = :doctor_id
+        AND day_of_week = :day_of_week
+        AND is_available = 1
+        AND :time1 >= start_time
+        AND :time2 < end_time
+    ");
+    $stmtAvail->execute([
+        ':doctor_id' => $doctorId,
+        ':day_of_week' => $dayOfWeek,
+        ':time1'      => $time,
+        ':time2'      => $time
+    ]);
+    if (!$stmtAvail->fetch()) {
+        return ['success' => false, 'message' => 'Doctor is not available at this time'];
+    }
+
+    // Check if the same doctor already has a booking at this date/time
     $stmt = $pdo->prepare("
         SELECT id FROM appointments 
         WHERE doctor_id = :doctor_id 
@@ -20,7 +43,8 @@ function createAppointment($patientId, $doctorId, $date, $time, $reason = '') {
     if ($stmt->fetch()) {
         return ['success' => false, 'message' => 'This time slot is already booked'];
     }
-    
+
+    // Insert the new appointment
     $stmt = $pdo->prepare("
         INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, reason) 
         VALUES (:patient_id, :doctor_id, :date, :time, :reason)
@@ -32,11 +56,13 @@ function createAppointment($patientId, $doctorId, $date, $time, $reason = '') {
         ':time' => $time,
         ':reason' => $reason
     ]);
-    
+
     return ['success' => true, 'id' => $pdo->lastInsertId()];
 }
 
-function getAppointmentById($id) {
+// ----- Get a single appointment with full patient & doctor details -----
+function getAppointmentById($id)
+{
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("
         SELECT a.*, 
@@ -55,12 +81,15 @@ function getAppointmentById($id) {
     return $stmt->fetch();
 }
 
-function getPatientAppointments($patientId, $status = null) {
+// ----- Get all appointments for a patient (optionally filtered by status) -----
+function getPatientAppointments($patientId, $status = null)
+{
     $pdo = getDBConnection();
     $statusCondition = $status ? "AND a.status = :status" : "";
     $params = [':patient_id' => $patientId];
-    if ($status) $params[':status'] = $status;
-    
+    if ($status)
+        $params[':status'] = $status;
+
     $stmt = $pdo->prepare("
         SELECT a.*, 
                d.name as doctor_name, d.email as doctor_email,
@@ -75,12 +104,15 @@ function getPatientAppointments($patientId, $status = null) {
     return $stmt->fetchAll();
 }
 
-function getDoctorAppointments($doctorId, $status = null) {
+// ----- Get all appointments for a doctor (optionally filtered by status) -----
+function getDoctorAppointments($doctorId, $status = null)
+{
     $pdo = getDBConnection();
     $statusCondition = $status ? "AND a.status = :status" : "";
     $params = [':doctor_id' => $doctorId];
-    if ($status) $params[':status'] = $status;
-    
+    if ($status)
+        $params[':status'] = $status;
+
     $stmt = $pdo->prepare("
         SELECT a.*, 
                p.name as patient_name, p.email as patient_email,
@@ -97,11 +129,13 @@ function getDoctorAppointments($doctorId, $status = null) {
     return $stmt->fetchAll();
 }
 
-function getAllAppointments($status = null) {
+// ----- Get all appointments system-wide (for admin) -----
+function getAllAppointments($status = null)
+{
     $pdo = getDBConnection();
     $statusCondition = $status ? "WHERE a.status = :status" : "";
     $params = $status ? [':status' => $status] : [];
-    
+
     $stmt = $pdo->prepare("
         SELECT a.*, 
                p.name as patient_name, p.email as patient_email,
@@ -118,7 +152,9 @@ function getAllAppointments($status = null) {
     return $stmt->fetchAll();
 }
 
-function updateAppointmentStatus($id, $status, $notes = null) {
+// ----- Update an appointment's status (and optional notes) -----
+function updateAppointmentStatus($id, $status, $notes = null)
+{
     $pdo = getDBConnection();
     if ($notes) {
         $stmt = $pdo->prepare("UPDATE appointments SET status = :status, notes = :notes WHERE id = :id");
@@ -129,14 +165,37 @@ function updateAppointmentStatus($id, $status, $notes = null) {
     }
 }
 
-function rescheduleAppointment($id, $newDate, $newTime) {
+// ----- Reschedule an appointment (checks for time conflicts) -----
+function rescheduleAppointment($id, $newDate, $newTime)
+{
     $pdo = getDBConnection();
-    
-    // Get the appointment to check doctor availability
+
+    // Get current appointment details
     $apt = getAppointmentById($id);
-    if (!$apt) return ['success' => false, 'message' => 'Appointment not found'];
-    
-    // Check for conflicts
+    if (!$apt)
+        return ['success' => false, 'message' => 'Appointment not found'];
+
+    // Check if the doctor is available at the requested date and time
+    $dayOfWeek = date('l', strtotime($newDate));
+    $stmtAvail = $pdo->prepare("
+        SELECT id FROM doctor_availability
+        WHERE doctor_id = :doctor_id
+        AND day_of_week = :day_of_week
+        AND is_available = 1
+        AND :time1 >= start_time
+        AND :time2 < end_time
+    ");
+    $stmtAvail->execute([
+        ':doctor_id' => $apt['doctor_id'],
+        ':day_of_week' => $dayOfWeek,
+        ':time1'       => $newTime,
+        ':time2'       => $newTime
+    ]);
+    if (!$stmtAvail->fetch()) {
+        return ['success' => false, 'message' => 'Doctor is not available at this time'];
+    }
+
+    // Check if the new time slot is already taken
     $stmt = $pdo->prepare("
         SELECT id FROM appointments 
         WHERE doctor_id = :doctor_id 
@@ -149,22 +208,27 @@ function rescheduleAppointment($id, $newDate, $newTime) {
     if ($stmt->fetch()) {
         return ['success' => false, 'message' => 'This new time slot is already booked'];
     }
-    
+
+    // Update the appointment
     $stmt = $pdo->prepare("
         UPDATE appointments 
         SET appointment_date = :date, appointment_time = :time, status = 'rescheduled' 
         WHERE id = :id
     ");
     $stmt->execute([':date' => $newDate, ':time' => $newTime, ':id' => $id]);
-    
+
     return ['success' => true];
 }
 
-function cancelAppointment($id) {
+// ----- Cancel an appointment -----
+function cancelAppointment($id)
+{
     return updateAppointmentStatus($id, 'cancelled');
 }
 
-function countAppointments($status = null) {
+// ----- Count appointments, optionally filtered by status -----
+function countAppointments($status = null)
+{
     $pdo = getDBConnection();
     if ($status) {
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM appointments WHERE status = :status");
@@ -177,7 +241,9 @@ function countAppointments($status = null) {
     return $result['total'];
 }
 
-function getTodayAppointments($doctorId = null) {
+// ----- Get today's appointments (for a specific doctor or all) -----
+function getTodayAppointments($doctorId = null)
+{
     $pdo = getDBConnection();
     $today = date('Y-m-d');
     if ($doctorId) {
@@ -206,7 +272,9 @@ function getTodayAppointments($doctorId = null) {
     return $stmt->fetchAll();
 }
 
-function getAppointmentStats() {
+// ----- Get aggregate appointment statistics -----
+function getAppointmentStats()
+{
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("
         SELECT 
