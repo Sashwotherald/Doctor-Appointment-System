@@ -881,8 +881,17 @@ img {
 }
 
 @media (max-width: 768px) {
+  .homepage-nav {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
   .hero-content h1 {
-    font-size: 34px;
+    font-size: 32px;
   }
   .features-grid {
     grid-template-columns: 1fr;
