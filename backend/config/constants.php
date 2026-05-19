@@ -3,6 +3,12 @@
  * Application Constants
  */
 
+<<<<<<< HEAD
+=======
+// Set Timezone
+date_default_timezone_set('Asia/Kathmandu');
+
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 // User Roles
 define('ROLE_PATIENT', 'patient');
 define('ROLE_DOCTOR', 'doctor');
@@ -23,7 +29,11 @@ define('DOCTOR_REJECTED', 'rejected');
 
 // Upload paths
 define('UPLOAD_DIR', __DIR__ . '/../uploads/doctors/');
+<<<<<<< HEAD
 define('UPLOAD_URL', '/Appointment/backend/uploads/doctors/');
+=======
+define('UPLOAD_URL', '/Doctor_Appointment_System/backend/uploads/doctors/');
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 
 // Specializations
 define('SPECIALIZATIONS', [

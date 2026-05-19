@@ -162,17 +162,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Validate email
       if (!email) {
+<<<<<<< HEAD
         showFieldError("forgot-email", "forgot-email-error", "Email is required");
         return;
       }
       if (!validateEmail(email)) {
         showFieldError("forgot-email", "forgot-email-error", "Please enter a valid email");
+=======
+        showFieldError(
+          "forgot-email",
+          "forgot-email-error",
+          "Email is required",
+        );
+        return;
+      }
+      if (!validateEmail(email)) {
+        showFieldError(
+          "forgot-email",
+          "forgot-email-error",
+          "Please enter a valid email",
+        );
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
         return;
       }
 
       // Show loading state
       const submitBtn = document.getElementById("forgot-submit-btn");
+<<<<<<< HEAD
       setButtonLoading(submitBtn, true, "Sending...", "Send Reset Link");
+=======
+      setButtonLoading(submitBtn, true, "Sending...", "Send OTP");
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 
       // Call forgot-password API
       const result = await apiCall("auth.php?action=forgotPassword", {
@@ -181,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (result.success) {
+<<<<<<< HEAD
         showToast("If the email exists, a reset link has been generated.", "success", 5000);
 
         // Display the reset link so the user can click it (simulates email)
@@ -192,12 +213,60 @@ document.addEventListener("DOMContentLoaded", () => {
             <a href="${result.reset_link}" class="reset-link-anchor">${result.reset_link}</a>
             <p class="reset-link-note">In a real system this link would be sent to your email.</p>
           `;
+=======
+        showToast(result.message, "success", 5000);
+
+        // Show email-sent confirmation with icon
+        const linkDisplay = document.getElementById("reset-link-display");
+        if (linkDisplay) {
+          linkDisplay.classList.remove("is-hidden");
+
+          if (result.otp) {
+            // SMTP not configured – show the OTP directly (dev/demo mode)
+            linkDisplay.innerHTML = `
+              <div class="otp-message-container">
+                <div class="otp-icon-box dev">🔑</div>
+                <p class="otp-title">Your OTP (Dev Mode)</p>
+                <p class="otp-text">
+                  Email delivery not configured.
+                </p>
+                <p class="otp-subtext">
+                  Your OTP is: <strong class="otp-strong">${result.otp}</strong>
+                </p>
+                <a href="reset-password.html" class="otp-btn">
+                  Enter OTP
+                </a>
+              </div>
+            `;
+          } else {
+            // Email was sent successfully
+            linkDisplay.innerHTML = `
+              <div class="otp-message-container">
+                <div class="otp-icon-box prod">📧</div>
+                <p class="otp-title">Check Your Email</p>
+                <p class="otp-text">
+                  We've sent an OTP to <strong class="otp-strong">${email}</strong>.
+                </p>
+                <p class="otp-subtext">
+                  The OTP will expire in 60 minutes.
+                </p>
+                <a href="reset-password.html" class="otp-btn">
+                  Enter OTP
+                </a>
+              </div>
+            `;
+          }
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
         }
       } else {
         showToast(result.message, "error");
       }
 
+<<<<<<< HEAD
       setButtonLoading(submitBtn, false, "", "Send Reset Link");
+=======
+      setButtonLoading(submitBtn, false, "", "Send OTP");
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     });
 
     // Clear error on input
@@ -225,6 +294,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       roleSelect.addEventListener("change", syncDoctorFieldVisibility);
       syncDoctorFieldVisibility();
+<<<<<<< HEAD
+=======
+
+      // Clear NMC error on input
+      const nmcInput = document.getElementById("reg-nmc");
+      if (nmcInput) {
+        nmcInput.addEventListener("input", () =>
+          clearFieldError("reg-nmc", "reg-nmc-error"),
+        );
+      }
+
+      const specializationSelect =
+        document.getElementById("reg-specialization");
+      if (specializationSelect) {
+        specializationSelect.addEventListener("change", () =>
+          clearFieldError("reg-specialization", "reg-specialization-error"),
+        );
+      }
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     }
 
     registerForm.addEventListener("submit", async (e) => {
@@ -240,6 +328,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const role = document.getElementById("reg-role").value;
       const specialization =
         document.getElementById("reg-specialization")?.value || "";
+<<<<<<< HEAD
+=======
+      const nmc = document.getElementById("reg-nmc")?.value.trim() || "";
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 
       // Validate all fields
       let isValid = true;
@@ -254,6 +346,23 @@ document.addEventListener("DOMContentLoaded", () => {
           "Name must be at least 2 characters",
         );
         isValid = false;
+<<<<<<< HEAD
+=======
+      } else if (name.length > 30) {
+        showFieldError(
+          "reg-name",
+          "reg-name-error",
+          "Name cannot exceed 30 characters",
+        );
+        isValid = false;
+      } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+        showFieldError(
+          "reg-name",
+          "reg-name-error",
+          "Name can only contain letters and spaces",
+        );
+        isValid = false;
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       }
 
       if (!email) {
@@ -297,6 +406,26 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!role) {
         showFieldError("reg-role", "reg-role-error", "Please select a role");
         isValid = false;
+<<<<<<< HEAD
+=======
+      } else if (role === "doctor") {
+        if (!nmc) {
+          showFieldError(
+            "reg-nmc",
+            "reg-nmc-error",
+            "NMC number is required for doctors",
+          );
+          isValid = false;
+        }
+        if (!specialization) {
+          showFieldError(
+            "reg-specialization",
+            "reg-specialization-error",
+            "Specialization is required for doctors",
+          );
+          isValid = false;
+        }
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       }
 
       if (!isValid) return;
@@ -313,7 +442,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // Call register API
       const result = await apiCall("auth.php?action=register", {
         method: "POST",
+<<<<<<< HEAD
         body: JSON.stringify({ name, email, password, role, specialization }),
+=======
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+          specialization,
+          nmc,
+        }),
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       });
 
       if (result.success) {

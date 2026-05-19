@@ -1,8 +1,16 @@
 /**
  * Admin Dashboard Scripts
+<<<<<<< HEAD
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+=======
+ * Manages dashboard stats, doctors, patients, appointments, reports.
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Require admin role to access this page
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
   if (!requireAuth("admin")) return;
 
   const user = getSession();
@@ -11,6 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAdminUI(user);
   loadDashboard();
 
+<<<<<<< HEAD
+=======
+  // Handle section changes from sidebar navigation
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
   window.onSectionChange = (section) => {
     switch (section) {
       case "dashboard":
@@ -28,31 +40,56 @@ document.addEventListener("DOMContentLoaded", () => {
       case "reports":
         loadReports();
         break;
+<<<<<<< HEAD
       case "settings":
         loadSettings();
         break;
+=======
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     }
   };
 });
 
+<<<<<<< HEAD
+=======
+// ----- Set admin name in the top bar -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 function setupAdminUI(user) {
   document.getElementById("topbar-name").textContent = user.name;
 }
 
+<<<<<<< HEAD
+=======
+// ----- Build the admin API URL -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 function adminEndpoint(action, extraQuery = "") {
   return `admin.php?action=${action}${extraQuery}`;
 }
 
+<<<<<<< HEAD
+=======
+// ----- POST helper for admin API -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 function adminPost(action, payload = {}) {
   return postJson(adminEndpoint(action), payload);
 }
 
+<<<<<<< HEAD
 // ===== DASHBOARD =====
+=======
+// =====================================================
+// DASHBOARD
+// =====================================================
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function loadDashboard() {
   const result = await apiCall(adminEndpoint("getDashboard"));
 
   if (result.success) {
     const d = result.dashboard;
+<<<<<<< HEAD
+=======
+    // Update stat cards
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     document.getElementById("stat-patients").textContent =
       d.total_patients || 0;
     document.getElementById("stat-doctors").textContent = d.total_doctors || 0;
@@ -69,13 +106,24 @@ async function loadDashboard() {
     document.getElementById("stat-cancelled").textContent =
       d.cancelled_appointments || 0;
 
+<<<<<<< HEAD
     setBadgeValue("pending-doc-badge", d.pending_doctors, "inline");
 
     // Recent appointments
+=======
+    // Show badge on sidebar if there are pending doctor approvals
+    setBadgeValue("pending-doc-badge", d.pending_doctors, "inline");
+
+    // Render the recent appointments table
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     renderRecentAppointments(d.recent_appointments || []);
   }
 }
 
+<<<<<<< HEAD
+=======
+// ----- Render the "Recent Appointments" table rows -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 function renderRecentAppointments(appointments) {
   const tbody = document.getElementById("recent-appts-tbody");
   if (!appointments.length) {
@@ -98,7 +146,13 @@ function renderRecentAppointments(appointments) {
     .join("");
 }
 
+<<<<<<< HEAD
 // ===== ALL APPOINTMENTS =====
+=======
+// =====================================================
+// ALL APPOINTMENTS
+// =====================================================
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 let currentAdminApptFilter = null;
 
 async function loadAllAppointments(status = null) {
@@ -138,6 +192,10 @@ async function loadAllAppointments(status = null) {
   }
 }
 
+<<<<<<< HEAD
+=======
+// ----- Admin changes an appointment status -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function adminUpdateAppointment(appointmentId, status) {
   if (!status) return;
   if (!confirm(`Change appointment #${appointmentId} status to "${status}"?`))
@@ -157,7 +215,13 @@ async function adminUpdateAppointment(appointmentId, status) {
   }
 }
 
+<<<<<<< HEAD
 // ===== DOCTORS =====
+=======
+// =====================================================
+// DOCTORS (with Active/Inactive column)
+// =====================================================
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 let currentDocFilter = "all-docs";
 
 async function loadDoctors(filter = null) {
@@ -168,7 +232,11 @@ async function loadDoctors(filter = null) {
   if (result.success && result.doctors.length > 0) {
     let doctors = result.doctors;
 
+<<<<<<< HEAD
     // Apply tab filter
+=======
+    // Apply tab filter (all / pending / approved)
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     if (currentDocFilter === "pending-docs") {
       doctors = doctors.filter((d) => d.approval_status === "pending");
     } else if (currentDocFilter === "approved-docs") {
@@ -176,13 +244,22 @@ async function loadDoctors(filter = null) {
     }
 
     if (doctors.length === 0) {
+<<<<<<< HEAD
       tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors in this category</h3></div></td></tr>`;
+=======
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors in this category</h3></div></td></tr>`;
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       return;
     }
 
     tbody.innerHTML = doctors
       .map((doc) => {
         const isPending = doc.approval_status === "pending";
+<<<<<<< HEAD
+=======
+
+        // Doctor photo or fallback initial
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
         const photoHtml = doc.photo
           ? `<img src="${doc.photo}" alt="${escapeHtml(doc.name)}" class="admin-doctor-avatar admin-doctor-avatar-img">`
           : `<div class="admin-doctor-avatar admin-doctor-avatar-fallback">${doc.name ? doc.name.charAt(0) : "?"}</div>`;
@@ -192,36 +269,68 @@ async function loadDoctors(filter = null) {
                 <td><strong>${escapeHtml(doc.name)}</strong></td>
                 <td>${escapeHtml(doc.email)}</td>
                 <td>${escapeHtml(doc.specialization || "-")}</td>
+<<<<<<< HEAD
                 <td>${doc.experience || 0} yrs</td>
                 <td>${getStatusBadge(doc.approval_status || "pending")}</td>
                 <td>
+=======
+                <td>${escapeHtml(doc.nmc || "-")}</td>
+                <td>${doc.experience || 0} yrs</td>
+                <td>${getStatusBadge(doc.approval_status || "pending")}</td>
+                <td>${getStatusBadge(doc.status || "active")}</td>
+                <td>
+                  <div class="appointment-actions flex-wrap-start">
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
                     ${
                       isPending
                         ? `
                         <button class="btn btn-sm btn-success" onclick="approveDoctor(${doc.id})" title="Approve">
+<<<<<<< HEAD
                             <i class="fas fa-check"></i> Approve
                         </button>
                         <button class="btn btn-sm btn-warning" onclick="rejectDoctor(${doc.id})" title="Reject">
                             <i class="fas fa-ban"></i> Reject
+=======
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="rejectDoctor(${doc.id})" title="Reject">
+                            <i class="fas fa-ban"></i>
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
                         </button>
                     `
                         : ""
                     }
+<<<<<<< HEAD
                     <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${doc.id})" title="Toggle Status">
+=======
+                    <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${doc.id})" title="Toggle Active/Inactive">
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
                         <i class="fas fa-power-off"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="deleteDoctor(${doc.id})" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
+<<<<<<< HEAD
+=======
+                  </div>
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
                 </td>
             </tr>`;
       })
       .join("");
   } else {
+<<<<<<< HEAD
     tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors registered</h3></div></td></tr>`;
   }
 }
 
+=======
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors registered</h3></div></td></tr>`;
+  }
+}
+
+// ----- Approve a doctor account -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function approveDoctor(doctorId) {
   if (!confirm("Approve this doctor?")) return;
   const result = await adminPost("approveDoctor", { doctor_id: doctorId });
@@ -234,6 +343,10 @@ async function approveDoctor(doctorId) {
   }
 }
 
+<<<<<<< HEAD
+=======
+// ----- Reject a doctor account -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function rejectDoctor(doctorId) {
   if (!confirm("Reject this doctor registration?")) return;
   const result = await adminPost("rejectDoctor", { doctor_id: doctorId });
@@ -246,6 +359,10 @@ async function rejectDoctor(doctorId) {
   }
 }
 
+<<<<<<< HEAD
+=======
+// ----- Permanently delete a doctor -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function deleteDoctor(doctorId) {
   if (
     !confirm(
@@ -263,7 +380,13 @@ async function deleteDoctor(doctorId) {
   }
 }
 
+<<<<<<< HEAD
 // ===== PATIENTS =====
+=======
+// =====================================================
+// PATIENTS
+// =====================================================
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function loadPatients() {
   const result = await apiCall(adminEndpoint("getPatients"));
   const tbody = document.getElementById("patients-tbody");
@@ -280,12 +403,20 @@ async function loadPatients() {
                 <td>${escapeHtml(p.gender || "-")}</td>
                 <td>${getStatusBadge(p.status || "active")}</td>
                 <td>
+<<<<<<< HEAD
+=======
+                  <div class="appointment-actions flex-wrap-start">
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
                     <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${p.id})" title="Toggle Status">
                         <i class="fas fa-power-off"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="deletePatient(${p.id})" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
+<<<<<<< HEAD
+=======
+                  </div>
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
                 </td>
             </tr>
         `,
@@ -296,6 +427,10 @@ async function loadPatients() {
   }
 }
 
+<<<<<<< HEAD
+=======
+// ----- Permanently delete a patient -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function deletePatient(patientId) {
   if (
     !confirm(
@@ -313,6 +448,10 @@ async function deletePatient(patientId) {
   }
 }
 
+<<<<<<< HEAD
+=======
+// ----- Toggle a user between active / inactive -----
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function toggleUserStatus(userId) {
   const result = await adminPost("toggleUserStatus", { user_id: userId });
   if (result.success) {
@@ -324,14 +463,24 @@ async function toggleUserStatus(userId) {
   }
 }
 
+<<<<<<< HEAD
 // ===== REPORTS =====
+=======
+// =====================================================
+// REPORTS
+// =====================================================
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 async function loadReports() {
   const result = await apiCall(adminEndpoint("getReports"));
 
   if (result.success) {
     const r = result.reports;
 
+<<<<<<< HEAD
     // Monthly stats
+=======
+    // Monthly stats table
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     const monthlyTbody = document.getElementById("monthly-stats-tbody");
     if (r.monthly_stats && r.monthly_stats.length > 0) {
       monthlyTbody.innerHTML = r.monthly_stats
@@ -350,7 +499,11 @@ async function loadReports() {
       monthlyTbody.innerHTML = `<tr><td colspan="4" class="report-empty">No appointment data yet</td></tr>`;
     }
 
+<<<<<<< HEAD
     // Top doctors
+=======
+    // Top doctors table
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     const topDocTbody = document.getElementById("top-doctors-tbody");
     if (r.top_doctors && r.top_doctors.length > 0) {
       topDocTbody.innerHTML = r.top_doctors
@@ -369,7 +522,11 @@ async function loadReports() {
       topDocTbody.innerHTML = `<tr><td colspan="4" class="report-empty">No doctor data yet</td></tr>`;
     }
 
+<<<<<<< HEAD
     // Specialization distribution
+=======
+    // Specialization distribution bar chart
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     const specChart = document.getElementById("specialization-chart");
     if (r.specializations && r.specializations.length > 0) {
       const maxCount = Math.max(...r.specializations.map((s) => s.count));
@@ -390,6 +547,10 @@ async function loadReports() {
         })
         .join("");
 
+<<<<<<< HEAD
+=======
+      // Animate the bars
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       specChart.querySelectorAll(".report-chart-fill").forEach((bar) => {
         bar.style.width = `${bar.dataset.width}%`;
       });
@@ -399,6 +560,7 @@ async function loadReports() {
   }
 }
 
+<<<<<<< HEAD
 // ===== SETTINGS =====
 async function loadSettings() {
   const result = await apiCall(adminEndpoint("getSettings"));
@@ -446,6 +608,11 @@ async function loadSettings() {
 }
 
 // ===== TAB HANDLER =====
+=======
+// =====================================================
+// TAB HANDLER (routes tab clicks to the right loader)
+// =====================================================
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 function handleAdminTabChange(tab) {
   // Appointment tabs
   const apptStatusMap = {

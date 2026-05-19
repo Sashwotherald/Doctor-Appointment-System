@@ -123,9 +123,19 @@ function setBadgeValue(elementId, count, displayMode = "inline") {
 
   if (count > 0) {
     badge.textContent = count;
+<<<<<<< HEAD
     badge.style.display = displayMode;
   } else {
     badge.style.display = "none";
+=======
+    badge.classList.remove("d-none");
+    badge.classList.add(
+      displayMode === "inline-block" ? "d-inline-block" : "d-block",
+    );
+  } else {
+    badge.classList.add("d-none");
+    badge.classList.remove("d-inline-block", "d-block");
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
   }
 }
 
@@ -146,18 +156,40 @@ function validatePassword(password) {
   if (password.length < 6) {
     return { valid: false, message: "Password must be at least 6 characters" };
   }
+<<<<<<< HEAD
   if (!/[A-Za-z]/.test(password)) {
+=======
+  if (!/[a-zA-Z]/.test(password)) {
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
     return {
       valid: false,
       message: "Password must contain at least one letter",
     };
   }
+<<<<<<< HEAD
+=======
+  if (!/[A-Z]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must contain at least one capital letter",
+    };
+  }
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
   if (!/[0-9]/.test(password)) {
     return {
       valid: false,
       message: "Password must contain at least one number",
     };
   }
+<<<<<<< HEAD
+=======
+  if (!/[^a-zA-Z0-9]/.test(password)) {
+    return {
+      valid: false,
+      message: "Password must contain at least one special character",
+    };
+  }
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
   return { valid: true };
 }
 
@@ -506,6 +538,7 @@ function initGlobalSearch() {
     // Filter table rows inside the active section
     const rows = activeSection.querySelectorAll("tbody tr");
     rows.forEach((row) => {
+<<<<<<< HEAD
       if (row.querySelector(".empty-state") || row.querySelector(".loading-overlay") || row.querySelector(".loader")) {
         return; // Don't filter empty state / loading rows
       }
@@ -514,17 +547,45 @@ function initGlobalSearch() {
       const text = searchTarget.textContent.toLowerCase();
       if (text.includes(term)) {
         row.style.display = "";
+=======
+      if (
+        row.querySelector(".empty-state") ||
+        row.querySelector(".loading-overlay") ||
+        row.querySelector(".loader")
+      ) {
+        return; // Don't filter empty state / loading rows
+      }
+
+      const searchTarget =
+        row.querySelector("strong") || row.firstElementChild || row;
+      const text = searchTarget.textContent.toLowerCase();
+      if (text.includes(term)) {
+        row.style.display = ""; // Using inline CSS for row/table flow
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       } else {
         row.style.display = "none";
       }
     });
 
     // Filter cards/list items if any (e.g. today's schedule)
+<<<<<<< HEAD
     const cards = activeSection.querySelectorAll(".appointment-item, .doctor-card");
     cards.forEach((card) => {
       if (card.querySelector(".empty-state")) return;
 
       const searchTarget = card.querySelector('.doctor-info h4') || card.querySelector('.appointment-details h4') || card;
+=======
+    const cards = activeSection.querySelectorAll(
+      ".appointment-item, .doctor-card",
+    );
+    cards.forEach((card) => {
+      if (card.querySelector(".empty-state")) return;
+
+      const searchTarget =
+        card.querySelector(".doctor-info h4") ||
+        card.querySelector(".appointment-details h4") ||
+        card;
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
       const text = searchTarget.textContent.toLowerCase();
       if (text.includes(term)) {
         card.style.display = "";

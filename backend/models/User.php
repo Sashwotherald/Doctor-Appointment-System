@@ -109,6 +109,7 @@ function verifyPassword($password, $hash) {
 // Password Reset Functions (Forgot Password Feature)
 // =====================================================
 
+<<<<<<< HEAD
 // ----- Create a password-reset token for the given user -----
 function createPasswordResetToken($userId) {
     $pdo = getDBConnection();
@@ -144,4 +145,41 @@ function markTokenUsed($token) {
     $pdo = getDBConnection();
     $stmt = $pdo->prepare("UPDATE password_resets SET used = 1 WHERE token = :token");
     return $stmt->execute([':token' => $token]);
+=======
+// ----- Create a password-reset OTP for the given user -----
+function createPasswordResetOtp($userId) {
+    $pdo = getDBConnection();
+
+    // Invalidate any previous unused otps for this user
+    $stmt = $pdo->prepare("UPDATE password_resets SET used = 1 WHERE user_id = :user_id AND used = 0");
+    $stmt->execute([':user_id' => $userId]);
+
+    // Generate a 6-digit OTP and set 1-hour expiry
+    // Use MySQL's DATE_ADD(NOW(), INTERVAL 1 HOUR) so that creation and
+    // validation both rely on the same MySQL clock (avoids PHP ↔ MySQL timezone mismatches).
+    $otp = sprintf("%06d", mt_rand(1, 999999));
+
+    $stmt = $pdo->prepare("INSERT INTO password_resets (user_id, otp, expires_at) VALUES (:user_id, :otp, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+    $stmt->execute([
+        ':user_id' => $userId,
+        ':otp' => $otp
+    ]);
+
+    return $otp;
+}
+
+// ----- Validate a reset OTP (must exist, not expired, not used) -----
+function validateResetOtp($otp) {
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("SELECT * FROM password_resets WHERE otp = :otp AND used = 0 AND expires_at > NOW()");
+    $stmt->execute([':otp' => $otp]);
+    return $stmt->fetch();
+}
+
+// ----- Mark an OTP as used after the password has been changed -----
+function markOtpUsed($otp) {
+    $pdo = getDBConnection();
+    $stmt = $pdo->prepare("UPDATE password_resets SET used = 1 WHERE otp = :otp");
+    return $stmt->execute([':otp' => $otp]);
+>>>>>>> 6dfa967331fa76f1debbef58388a047103e50e9e
 }
