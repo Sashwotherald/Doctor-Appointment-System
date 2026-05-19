@@ -91,18 +91,41 @@ function handleRegister($data)
     if (empty($data['name']) || empty($data['email']) || empty($data['password']) || empty($data['role'])) {
         return ['success' => false, 'message' => 'All fields are required'];
     }
+    
+    // Validate Full Name
+    if (strlen($data['name']) > 30) {
+        return ['success' => false, 'message' => 'Full name cannot exceed 30 characters'];
+    }
+    if (!preg_match('/^[a-zA-Z\s]+$/', $data['name'])) {
+        return ['success' => false, 'message' => 'Full name can only contain letters and spaces'];
+    }
+
     if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
         return ['success' => false, 'message' => 'Invalid email format'];
     }
     if (strlen($data['password']) < 6) {
         return ['success' => false, 'message' => 'Password must be at least 6 characters'];
     }
+    if (!preg_match('/[A-Z]/', $data['password'])) {
+        return ['success' => false, 'message' => 'Password must contain at least one capital letter'];
+    }
+    if (!preg_match('/[0-9]/', $data['password'])) {
+        return ['success' => false, 'message' => 'Password must contain at least one number'];
+    }
+    if (!preg_match('/[^a-zA-Z0-9]/', $data['password'])) {
+        return ['success' => false, 'message' => 'Password must contain at least one special character'];
+    }
     if (!in_array($data['role'], [ROLE_PATIENT, ROLE_DOCTOR])) {
         return ['success' => false, 'message' => 'Invalid role selected'];
     }
 
-    if ($data['role'] === ROLE_DOCTOR && empty($data['nmc'])) {
-        return ['success' => false, 'message' => 'NMC number is required for doctors'];
+    if ($data['role'] === ROLE_DOCTOR) {
+        if (empty($data['nmc'])) {
+            return ['success' => false, 'message' => 'NMC number is required for doctors'];
+        }
+        if (empty($data['specialization'])) {
+            return ['success' => false, 'message' => 'Specialization is required for doctors'];
+        }
     }
 
     // Check for duplicate email
@@ -222,8 +245,15 @@ function handleResetPassword($data)
     if (strlen($data['password']) < 6) {
         return ['success' => false, 'message' => 'Password must be at least 6 characters'];
     }
-
-    // Validate the OTP
+    if (!preg_match('/[A-Z]/', $data['password'])) {
+        return ['success' => false, 'message' => 'Password must contain at least one capital letter'];
+    }
+    if (!preg_match('/[0-9]/', $data['password'])) {
+        return ['success' => false, 'message' => 'Password must contain at least one number'];
+    }
+    if (!preg_match('/[^a-zA-Z0-9]/', $data['password'])) {
+        return ['success' => false, 'message' => 'Password must contain at least one special character'];
+    }
     $resetRecord = validateResetOtp($data['otp']);
     if (!$resetRecord) {
         return ['success' => false, 'message' => 'Invalid or expired reset OTP'];

@@ -5,9 +5,9 @@
  */
 
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'np03cs4s250107');
-define('DB_USER', 'np03cs4s250107');
-define('DB_PASS', 'lxFJQPFaar');
+define('DB_NAME', 'appointment_system');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 
 function getDBConnection() {
     static $pdo = null;

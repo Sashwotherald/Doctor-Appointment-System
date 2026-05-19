@@ -9,7 +9,7 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/constants.php';
 
 // GROQ offers a completely FREE OpenAI-compatible API tier
-define('GROQ_API_KEY', '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');
+define('GROQ_API_KEY', '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');
 
 // ----- Find approved doctors by exact specialization -----
 function findDoctorsBySpecialization($specialization)
