@@ -82,7 +82,8 @@ function initDateWidget() {
   const yearEl = document.getElementById("widget-year");
 
   if (dayEl) dayEl.textContent = now.getDate();
-  if (monthEl) monthEl.textContent = now.toLocaleDateString("en-US", { month: "long" });
+  if (monthEl)
+    monthEl.textContent = now.toLocaleDateString("en-US", { month: "long" });
   if (yearEl) yearEl.textContent = now.getFullYear();
 }
 
@@ -90,7 +91,10 @@ function animateCounter(element, target) {
   if (!element) return;
   const duration = 800;
   const start = parseInt(element.textContent) || 0;
-  if (start === target) { element.textContent = target; return; }
+  if (start === target) {
+    element.textContent = target;
+    return;
+  }
   const startTime = performance.now();
 
   function update(currentTime) {
@@ -113,9 +117,18 @@ async function loadDashboard() {
 
     // Animate stat counters
     animateCounter(document.getElementById("stat-total"), d.total_appointments);
-    animateCounter(document.getElementById("stat-upcoming"), d.upcoming_appointments.length);
-    animateCounter(document.getElementById("stat-pending"), d.pending_appointments.length);
-    animateCounter(document.getElementById("stat-notifs"), d.unread_notifications);
+    animateCounter(
+      document.getElementById("stat-upcoming"),
+      d.upcoming_appointments.length,
+    );
+    animateCounter(
+      document.getElementById("stat-pending"),
+      d.pending_appointments.length,
+    );
+    animateCounter(
+      document.getElementById("stat-notifs"),
+      d.unread_notifications,
+    );
 
     setBadgeValue("notif-count", d.unread_notifications, "flex");
     setBadgeValue("pending-badge", d.pending_appointments.length, "inline");
@@ -880,18 +893,18 @@ async function markNotifRead(notificationId) {
 
 // ===== AI EMERGENCY BOOKING =====
 function setEmergencyStep(stepNum) {
-  const steps = document.querySelectorAll('.emergency-step');
-  const connectors = document.querySelectorAll('.step-connector');
+  const steps = document.querySelectorAll(".emergency-step");
+  const connectors = document.querySelectorAll(".step-connector");
 
   steps.forEach((step) => {
     const sNum = parseInt(step.dataset.step);
-    step.classList.remove('active', 'completed');
-    if (sNum < stepNum) step.classList.add('completed');
-    else if (sNum === stepNum) step.classList.add('active');
+    step.classList.remove("active", "completed");
+    if (sNum < stepNum) step.classList.add("completed");
+    else if (sNum === stepNum) step.classList.add("active");
   });
 
   connectors.forEach((conn, idx) => {
-    conn.classList.toggle('active', idx < stepNum - 1);
+    conn.classList.toggle("active", idx < stepNum - 1);
   });
 }
 
@@ -930,24 +943,21 @@ function setupEmergencyBooking() {
         setEmergencyStep(3);
         const d = result.data;
 
-        let urgencyColor = "#f59e0b";
-        let urgencyBg = "rgba(245, 158, 11, 0.1)";
+        let urgencyClass = "urgency-medium";
         let urgencyIcon = "fa-exclamation-circle";
         if (d.urgency === "Low") {
-          urgencyColor = "#10b981";
-          urgencyBg = "rgba(16, 185, 129, 0.1)";
+          urgencyClass = "urgency-low";
           urgencyIcon = "fa-info-circle";
         }
         if (d.urgency === "Critical") {
-          urgencyColor = "#ef4444";
-          urgencyBg = "rgba(239, 68, 68, 0.1)";
+          urgencyClass = "urgency-critical";
           urgencyIcon = "fa-exclamation-triangle";
         }
 
         resultDiv.innerHTML = `
           <div class="booking-success-ticket">
             <div class="ticket-header">
-              <span class="urgency-badge" style="background: ${urgencyBg}; color: ${urgencyColor}; border: 1px solid ${urgencyColor}30;">
+              <span class="urgency-badge ${urgencyClass}">
                 <i class="fas ${urgencyIcon}"></i> ${d.urgency} Priority
               </span>
               <span class="dept-badge"><i class="fas fa-stethoscope"></i> ${d.department}</span>
@@ -974,7 +984,7 @@ function setupEmergencyBooking() {
               <p class="success-msg"><i class="fas fa-check-circle"></i> Booking confirmed instantly by AI Triage</p>
             </div>
           </div>
-          <button class="btn btn-outline" style="width: calc(100% - 56px); margin: 12px 28px 24px; border-radius: var(--radius-lg); padding: 13px;" onclick="resetEmergencyBooking()">
+          <button class="btn btn-outline emergency-btn-full" onclick="resetEmergencyBooking()">
             <i class="fas fa-redo"></i> New Emergency Request
           </button>
         `;
@@ -984,13 +994,13 @@ function setupEmergencyBooking() {
         loadAppointments("all");
       } else {
         setEmergencyStep(1);
-        let debugHtml = '';
+        let debugHtml = "";
         if (result.debug) {
-          debugHtml = `<div style="margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:12px;text-align:left;">
+          debugHtml = `<div class="emergency-debug-info">
             <strong>Debug Info:</strong><br>
-            Department matched: ${result.debug.department || 'N/A'}<br>
+            Department matched: ${result.debug.department || "N/A"}<br>
             Doctors found: ${result.debug.doctors_found || 0}<br>
-            ${(result.debug.doctor_details || []).map(d => `• ${d.name} (${d.specialization}) - ${d.availability_count} availability records`).join('<br>')}
+            ${(result.debug.doctor_details || []).map((d) => `• ${d.name} (${d.specialization}) - ${d.availability_count} availability records`).join("<br>")}
           </div>`;
         }
         resultDiv.innerHTML = `
@@ -1000,7 +1010,7 @@ function setupEmergencyBooking() {
             <p>${result.message}</p>
             ${debugHtml}
           </div>
-          <button class="btn btn-outline" style="width: calc(100% - 56px); margin: 12px 28px 24px; border-radius: var(--radius-lg); padding: 13px;" onclick="resetEmergencyBooking()">
+          <button class="btn btn-outline emergency-btn-full" onclick="resetEmergencyBooking()">
             <i class="fas fa-redo"></i> Try Again
           </button>
         `;
@@ -1015,8 +1025,8 @@ function setupEmergencyBooking() {
           <h5>Connection Error</h5>
           <p>Could not connect to the triage system. Please try again or call emergency services.</p>
         </div>
-        <button class="btn btn-outline" style="width: calc(100% - 56px); margin: 12px 28px 24px; border-radius: var(--radius-lg); padding: 13px;" onclick="resetEmergencyBooking()">
-          <i class="fas fa-redo"></i> Try Again
+        <button class="btn btn-outline emergency-btn-full" onclick="resetEmergencyBooking()">
+            <i class="fas fa-redo"></i> Try Again
         </button>
       `;
       resultDiv.style.display = "block";
@@ -1026,8 +1036,8 @@ function setupEmergencyBooking() {
 
 function resetEmergencyBooking() {
   document.getElementById("emergency-symptoms").value = "";
-  document.getElementById("emergency-result").style.display = "none";
-  document.getElementById("emergency-input-area").style.display = "flex";
+  document.getElementById("emergency-result").classList.add("d-none");
+  document.getElementById("emergency-input-area").classList.remove("d-none");
+  document.getElementById("emergency-input-area").classList.add("d-flex");
   setEmergencyStep(1);
 }
-

@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
       case "reports":
         loadReports();
         break;
-
     }
   };
 });
@@ -213,7 +212,7 @@ async function loadDoctors(filter = null) {
                 <td>${getStatusBadge(doc.approval_status || "pending")}</td>
                 <td>${getStatusBadge(doc.status || "active")}</td>
                 <td>
-                  <div class="appointment-actions" style="flex-wrap: wrap; justify-content: flex-start;">
+                  <div class="appointment-actions flex-wrap-start">
                     ${
                       isPending
                         ? `
@@ -305,7 +304,7 @@ async function loadPatients() {
                 <td>${escapeHtml(p.gender || "-")}</td>
                 <td>${getStatusBadge(p.status || "active")}</td>
                 <td>
-                  <div class="appointment-actions" style="flex-wrap: wrap; justify-content: flex-start;">
+                  <div class="appointment-actions flex-wrap-start">
                     <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${p.id})" title="Toggle Status">
                         <i class="fas fa-power-off"></i>
                     </button>
@@ -430,8 +429,6 @@ async function loadReports() {
     }
   }
 }
-
-
 
 // =====================================================
 // TAB HANDLER (routes tab clicks to the right loader)

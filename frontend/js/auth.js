@@ -199,17 +199,16 @@ document.addEventListener("DOMContentLoaded", () => {
           if (result.otp) {
             // SMTP not configured – show the OTP directly (dev/demo mode)
             linkDisplay.innerHTML = `
-              <div style="text-align:center;padding:10px 0;">
-                <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:40px;background:var(--primary-lighter, #e0f4f4);border-radius:6px;margin-bottom:16px;font-size:22px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">🔑</div>
-                <p style="margin:0 0 12px;font-weight:600;color:var(--text-primary);font-size:16px;">Your OTP (Dev Mode)</p>
-                <p style="margin:0 0 8px;color:var(--text-secondary);font-size:15px;line-height:1.5;">
+              <div class="otp-message-container">
+                <div class="otp-icon-box dev">🔑</div>
+                <p class="otp-title">Your OTP (Dev Mode)</p>
+                <p class="otp-text">
                   Email delivery not configured.
                 </p>
-                <p style="margin:0 0 16px;color:var(--text-muted);font-size:14px;">
-                  Your OTP is: <strong style="color:var(--text-primary);">${result.otp}</strong>
+                <p class="otp-subtext">
+                  Your OTP is: <strong class="otp-strong">${result.otp}</strong>
                 </p>
-                <a href="reset-password.html" 
-                   style="display:inline-block;padding:12px 32px;background:#7c3aed;color:#fff;font-size:16px;font-weight:600;text-decoration:none;border-radius:8px;margin-top:6px;transition:0.2s;box-shadow:0 4px 10px rgba(124,58,237,0.3);">
+                <a href="reset-password.html" class="otp-btn">
                   Enter OTP
                 </a>
               </div>
@@ -217,17 +216,16 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             // Email was sent successfully
             linkDisplay.innerHTML = `
-              <div style="text-align:center;padding:10px 0;">
-                <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:40px;background:#ede9fe;border-radius:6px;margin-bottom:16px;font-size:22px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">📧</div>
-                <p style="margin:0 0 16px;font-weight:600;color:var(--text-primary);font-size:15px;">Check Your Email</p>
-                <p style="margin:0 0 16px;color:var(--text-secondary);font-size:14px;line-height:1.5;">
-                  We've sent an OTP to <strong style="color:var(--text-primary);">${email}</strong>.
+              <div class="otp-message-container">
+                <div class="otp-icon-box prod">📧</div>
+                <p class="otp-title">Check Your Email</p>
+                <p class="otp-text">
+                  We've sent an OTP to <strong class="otp-strong">${email}</strong>.
                 </p>
-                <p style="margin:0 0 20px;color:var(--text-muted);font-size:13px;">
+                <p class="otp-subtext">
                   The OTP will expire in 60 minutes.
                 </p>
-                <a href="reset-password.html" 
-                   style="display:inline-block;padding:12px 36px;background:#7c3aed;color:#fff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;margin-top:4px;transition:0.2s;box-shadow:0 4px 10px rgba(124,58,237,0.3);">
+                <a href="reset-password.html" class="otp-btn">
                   Enter OTP
                 </a>
               </div>
@@ -274,6 +272,14 @@ document.addEventListener("DOMContentLoaded", () => {
           clearFieldError("reg-nmc", "reg-nmc-error"),
         );
       }
+
+      const specializationSelect =
+        document.getElementById("reg-specialization");
+      if (specializationSelect) {
+        specializationSelect.addEventListener("change", () =>
+          clearFieldError("reg-specialization", "reg-specialization-error"),
+        );
+      }
     }
 
     registerForm.addEventListener("submit", async (e) => {
@@ -302,6 +308,20 @@ document.addEventListener("DOMContentLoaded", () => {
           "reg-name",
           "reg-name-error",
           "Name must be at least 2 characters",
+        );
+        isValid = false;
+      } else if (name.length > 30) {
+        showFieldError(
+          "reg-name",
+          "reg-name-error",
+          "Name cannot exceed 30 characters",
+        );
+        isValid = false;
+      } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+        showFieldError(
+          "reg-name",
+          "reg-name-error",
+          "Name can only contain letters and spaces",
         );
         isValid = false;
       }
@@ -353,6 +373,14 @@ document.addEventListener("DOMContentLoaded", () => {
             "reg-nmc",
             "reg-nmc-error",
             "NMC number is required for doctors",
+          );
+          isValid = false;
+        }
+        if (!specialization) {
+          showFieldError(
+            "reg-specialization",
+            "reg-specialization-error",
+            "Specialization is required for doctors",
           );
           isValid = false;
         }
