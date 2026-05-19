@@ -62,14 +62,6 @@
             <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
             Reports
           </a>
-          <a
-            href="#"
-            class="nav-item"
-            data-section="settings"
-            id="nav-settings"
-          >
-            <span class="nav-icon"><i class="fas fa-cog"></i></span> Settings
-          </a>
         </nav>
         <div class="sidebar-footer">
           <a href="#" class="nav-item" id="logout-btn">
@@ -270,8 +262,10 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Specialization</th>
+                        <th>NMC</th>
                         <th>Experience</th>
-                        <th>Status</th>
+                        <th>Approval</th>
+                        <th>Active</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -375,90 +369,6 @@
             </div>
           </div>
 
-          <!-- ===== SETTINGS ===== -->
-          <div class="content-section" id="section-settings">
-            <div class="page-header">
-              <h1>System Settings</h1>
-              <p>Configure system-wide settings.</p>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <h3><i class="fas fa-cog"></i> General Settings</h3>
-              </div>
-              <div class="card-body">
-                <form id="settings-form">
-                  <div class="profile-form-grid">
-                    <div class="form-group">
-                      <label for="setting-site-name">Site Name</label>
-                      <input
-                        type="text"
-                        id="setting-site-name"
-                        placeholder="Herald Clinical Sanctuary"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="setting-appointment-duration"
-                        >Appointment Duration (min)</label
-                      >
-                      <input
-                        type="number"
-                        id="setting-appointment-duration"
-                        placeholder="30"
-                        min="10"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="setting-max-appointments"
-                        >Max Appointments Per Day</label
-                      >
-                      <input
-                        type="number"
-                        id="setting-max-appointments"
-                        placeholder="20"
-                        min="1"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="setting-working-start"
-                        >Working Hours Start</label
-                      >
-                      <input
-                        type="time"
-                        id="setting-working-start"
-                        value="09:00"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="setting-working-end">Working Hours End</label>
-                      <input
-                        type="time"
-                        id="setting-working-end"
-                        value="17:00"
-                      />
-                    </div>
-                    <div class="form-group full-width">
-                      <label for="setting-site-desc">Site Description</label>
-                      <textarea
-                        id="setting-site-desc"
-                        rows="3"
-                        placeholder="Your trusted healthcare platform..."
-                      ></textarea>
-                    </div>
-                  </div>
-                  <div class="mt-24">
-                    <button
-                      type="submit"
-                      class="btn btn-primary"
-                      id="save-settings-btn"
-                    >
-                      <i class="fas fa-save"></i> Save Settings
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

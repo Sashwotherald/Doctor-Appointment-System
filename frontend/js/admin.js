@@ -1,8 +1,10 @@
 /**
  * Admin Dashboard Scripts
+ * Manages dashboard stats, doctors, patients, appointments, reports.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Require admin role to access this page
   if (!requireAuth("admin")) return;
 
   const user = getSession();
@@ -11,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAdminUI(user);
   loadDashboard();
 
+  // Handle section changes from sidebar navigation
   window.onSectionChange = (section) => {
     switch (section) {
       case "dashboard":
@@ -28,31 +31,34 @@ document.addEventListener("DOMContentLoaded", () => {
       case "reports":
         loadReports();
         break;
-      case "settings":
-        loadSettings();
-        break;
     }
   };
 });
 
+// ----- Set admin name in the top bar -----
 function setupAdminUI(user) {
   document.getElementById("topbar-name").textContent = user.name;
 }
 
+// ----- Build the admin API URL -----
 function adminEndpoint(action, extraQuery = "") {
   return `admin.php?action=${action}${extraQuery}`;
 }
 
+// ----- POST helper for admin API -----
 function adminPost(action, payload = {}) {
   return postJson(adminEndpoint(action), payload);
 }
 
-// ===== DASHBOARD =====
+// =====================================================
+// DASHBOARD
+// =====================================================
 async function loadDashboard() {
   const result = await apiCall(adminEndpoint("getDashboard"));
 
   if (result.success) {
     const d = result.dashboard;
+    // Update stat cards
     document.getElementById("stat-patients").textContent =
       d.total_patients || 0;
     document.getElementById("stat-doctors").textContent = d.total_doctors || 0;
@@ -69,13 +75,15 @@ async function loadDashboard() {
     document.getElementById("stat-cancelled").textContent =
       d.cancelled_appointments || 0;
 
+    // Show badge on sidebar if there are pending doctor approvals
     setBadgeValue("pending-doc-badge", d.pending_doctors, "inline");
 
-    // Recent appointments
+    // Render the recent appointments table
     renderRecentAppointments(d.recent_appointments || []);
   }
 }
 
+// ----- Render the "Recent Appointments" table rows -----
 function renderRecentAppointments(appointments) {
   const tbody = document.getElementById("recent-appts-tbody");
   if (!appointments.length) {
@@ -98,7 +106,9 @@ function renderRecentAppointments(appointments) {
     .join("");
 }
 
-// ===== ALL APPOINTMENTS =====
+// =====================================================
+// ALL APPOINTMENTS
+// =====================================================
 let currentAdminApptFilter = null;
 
 async function loadAllAppointments(status = null) {
@@ -138,6 +148,7 @@ async function loadAllAppointments(status = null) {
   }
 }
 
+// ----- Admin changes an appointment status -----
 async function adminUpdateAppointment(appointmentId, status) {
   if (!status) return;
   if (!confirm(`Change appointment #${appointmentId} status to "${status}"?`))
@@ -157,7 +168,9 @@ async function adminUpdateAppointment(appointmentId, status) {
   }
 }
 
-// ===== DOCTORS =====
+// =====================================================
+// DOCTORS (with Active/Inactive column)
+// =====================================================
 let currentDocFilter = "all-docs";
 
 async function loadDoctors(filter = null) {
@@ -168,7 +181,7 @@ async function loadDoctors(filter = null) {
   if (result.success && result.doctors.length > 0) {
     let doctors = result.doctors;
 
-    // Apply tab filter
+    // Apply tab filter (all / pending / approved)
     if (currentDocFilter === "pending-docs") {
       doctors = doctors.filter((d) => d.approval_status === "pending");
     } else if (currentDocFilter === "approved-docs") {
@@ -176,13 +189,15 @@ async function loadDoctors(filter = null) {
     }
 
     if (doctors.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors in this category</h3></div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors in this category</h3></div></td></tr>`;
       return;
     }
 
     tbody.innerHTML = doctors
       .map((doc) => {
         const isPending = doc.approval_status === "pending";
+
+        // Doctor photo or fallback initial
         const photoHtml = doc.photo
           ? `<img src="${doc.photo}" alt="${escapeHtml(doc.name)}" class="admin-doctor-avatar admin-doctor-avatar-img">`
           : `<div class="admin-doctor-avatar admin-doctor-avatar-fallback">${doc.name ? doc.name.charAt(0) : "?"}</div>`;
@@ -192,36 +207,41 @@ async function loadDoctors(filter = null) {
                 <td><strong>${escapeHtml(doc.name)}</strong></td>
                 <td>${escapeHtml(doc.email)}</td>
                 <td>${escapeHtml(doc.specialization || "-")}</td>
+                <td>${escapeHtml(doc.nmc || "-")}</td>
                 <td>${doc.experience || 0} yrs</td>
                 <td>${getStatusBadge(doc.approval_status || "pending")}</td>
+                <td>${getStatusBadge(doc.status || "active")}</td>
                 <td>
+                  <div class="appointment-actions flex-wrap-start">
                     ${
                       isPending
                         ? `
                         <button class="btn btn-sm btn-success" onclick="approveDoctor(${doc.id})" title="Approve">
-                            <i class="fas fa-check"></i> Approve
+                            <i class="fas fa-check"></i>
                         </button>
                         <button class="btn btn-sm btn-warning" onclick="rejectDoctor(${doc.id})" title="Reject">
-                            <i class="fas fa-ban"></i> Reject
+                            <i class="fas fa-ban"></i>
                         </button>
                     `
                         : ""
                     }
-                    <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${doc.id})" title="Toggle Status">
+                    <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${doc.id})" title="Toggle Active/Inactive">
                         <i class="fas fa-power-off"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="deleteDoctor(${doc.id})" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
+                  </div>
                 </td>
             </tr>`;
       })
       .join("");
   } else {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors registered</h3></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👨‍⚕️</div><h3>No doctors registered</h3></div></td></tr>`;
   }
 }
 
+// ----- Approve a doctor account -----
 async function approveDoctor(doctorId) {
   if (!confirm("Approve this doctor?")) return;
   const result = await adminPost("approveDoctor", { doctor_id: doctorId });
@@ -234,6 +254,7 @@ async function approveDoctor(doctorId) {
   }
 }
 
+// ----- Reject a doctor account -----
 async function rejectDoctor(doctorId) {
   if (!confirm("Reject this doctor registration?")) return;
   const result = await adminPost("rejectDoctor", { doctor_id: doctorId });
@@ -246,6 +267,7 @@ async function rejectDoctor(doctorId) {
   }
 }
 
+// ----- Permanently delete a doctor -----
 async function deleteDoctor(doctorId) {
   if (
     !confirm(
@@ -263,7 +285,9 @@ async function deleteDoctor(doctorId) {
   }
 }
 
-// ===== PATIENTS =====
+// =====================================================
+// PATIENTS
+// =====================================================
 async function loadPatients() {
   const result = await apiCall(adminEndpoint("getPatients"));
   const tbody = document.getElementById("patients-tbody");
@@ -280,12 +304,14 @@ async function loadPatients() {
                 <td>${escapeHtml(p.gender || "-")}</td>
                 <td>${getStatusBadge(p.status || "active")}</td>
                 <td>
+                  <div class="appointment-actions flex-wrap-start">
                     <button class="btn btn-sm btn-secondary" onclick="toggleUserStatus(${p.id})" title="Toggle Status">
                         <i class="fas fa-power-off"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="deletePatient(${p.id})" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
+                  </div>
                 </td>
             </tr>
         `,
@@ -296,6 +322,7 @@ async function loadPatients() {
   }
 }
 
+// ----- Permanently delete a patient -----
 async function deletePatient(patientId) {
   if (
     !confirm(
@@ -313,6 +340,7 @@ async function deletePatient(patientId) {
   }
 }
 
+// ----- Toggle a user between active / inactive -----
 async function toggleUserStatus(userId) {
   const result = await adminPost("toggleUserStatus", { user_id: userId });
   if (result.success) {
@@ -324,14 +352,16 @@ async function toggleUserStatus(userId) {
   }
 }
 
-// ===== REPORTS =====
+// =====================================================
+// REPORTS
+// =====================================================
 async function loadReports() {
   const result = await apiCall(adminEndpoint("getReports"));
 
   if (result.success) {
     const r = result.reports;
 
-    // Monthly stats
+    // Monthly stats table
     const monthlyTbody = document.getElementById("monthly-stats-tbody");
     if (r.monthly_stats && r.monthly_stats.length > 0) {
       monthlyTbody.innerHTML = r.monthly_stats
@@ -350,7 +380,7 @@ async function loadReports() {
       monthlyTbody.innerHTML = `<tr><td colspan="4" class="report-empty">No appointment data yet</td></tr>`;
     }
 
-    // Top doctors
+    // Top doctors table
     const topDocTbody = document.getElementById("top-doctors-tbody");
     if (r.top_doctors && r.top_doctors.length > 0) {
       topDocTbody.innerHTML = r.top_doctors
@@ -369,7 +399,7 @@ async function loadReports() {
       topDocTbody.innerHTML = `<tr><td colspan="4" class="report-empty">No doctor data yet</td></tr>`;
     }
 
-    // Specialization distribution
+    // Specialization distribution bar chart
     const specChart = document.getElementById("specialization-chart");
     if (r.specializations && r.specializations.length > 0) {
       const maxCount = Math.max(...r.specializations.map((s) => s.count));
@@ -390,6 +420,7 @@ async function loadReports() {
         })
         .join("");
 
+      // Animate the bars
       specChart.querySelectorAll(".report-chart-fill").forEach((bar) => {
         bar.style.width = `${bar.dataset.width}%`;
       });
@@ -399,53 +430,9 @@ async function loadReports() {
   }
 }
 
-// ===== SETTINGS =====
-async function loadSettings() {
-  const result = await apiCall(adminEndpoint("getSettings"));
-
-  if (result.success) {
-    const s = result.settings;
-    document.getElementById("setting-site-name").value = s.site_name || "";
-    document.getElementById("setting-site-desc").value =
-      s.site_description || "";
-    document.getElementById("setting-appointment-duration").value =
-      s.appointment_duration || "30";
-    document.getElementById("setting-max-appointments").value =
-      s.max_appointments_per_day || "20";
-    document.getElementById("setting-working-start").value =
-      s.working_hours_start || "09:00";
-    document.getElementById("setting-working-end").value =
-      s.working_hours_end || "17:00";
-  }
-
-  document.getElementById("settings-form").onsubmit = async (e) => {
-    e.preventDefault();
-
-    const data = {
-      site_name: document.getElementById("setting-site-name").value,
-      site_description: document.getElementById("setting-site-desc").value,
-      appointment_duration: document.getElementById(
-        "setting-appointment-duration",
-      ).value,
-      max_appointments_per_day: document.getElementById(
-        "setting-max-appointments",
-      ).value,
-      working_hours_start: document.getElementById("setting-working-start")
-        .value,
-      working_hours_end: document.getElementById("setting-working-end").value,
-    };
-
-    const result = await adminPost("updateSettings", data);
-
-    if (result.success) {
-      showToast("Settings saved successfully", "success");
-    } else {
-      showToast(result.message, "error");
-    }
-  };
-}
-
-// ===== TAB HANDLER =====
+// =====================================================
+// TAB HANDLER (routes tab clicks to the right loader)
+// =====================================================
 function handleAdminTabChange(tab) {
   // Appointment tabs
   const apptStatusMap = {

@@ -15,6 +15,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
   </head>
+
   <body>
     <div class="dashboard-layout">
       <!-- Sidebar Overlay (mobile) -->
@@ -82,7 +83,7 @@
               <span class="search-icon"><i class="fas fa-search"></i></span>
               <input
                 type="text"
-                placeholder="Search medical records..."
+                placeholder="Search Doctors..."
                 id="global-search"
               />
             </div>
@@ -106,15 +107,34 @@
         <div class="page-content">
           <!-- ===== DASHBOARD SECTION ===== -->
           <div class="content-section active" id="section-dashboard">
-            <div class="page-header">
-              <h1 id="greeting-text">Good morning, Patient.</h1>
-              <p>
-                Here is everything you need for your healthcare journey today.
-              </p>
+            <!-- Welcome Banner -->
+            <div class="welcome-banner" id="welcome-banner">
+              <div class="welcome-banner-content">
+                <div class="welcome-text">
+                  <h1 id="greeting-text"><span class="welcome-wave">👋</span> Good morning, Patient.</h1>
+                  <p class="welcome-subtitle">
+                    Here is everything you need for your healthcare journey today.
+                  </p>
+                </div>
+                <div class="welcome-date-widget">
+                  <div class="date-widget-day" id="widget-day">--</div>
+                  <div class="date-widget-details">
+                    <span class="date-widget-month" id="widget-month">---</span>
+                    <span class="date-widget-year" id="widget-year">----</span>
+                  </div>
+                </div>
+              </div>
+              <div class="welcome-banner-decoration">
+                <div class="decoration-circle circle-1"></div>
+                <div class="decoration-circle circle-2"></div>
+                <div class="decoration-circle circle-3"></div>
+              </div>
             </div>
 
-            <div class="stats-grid">
-              <div class="stat-card primary">
+            <!-- Stats Grid -->
+            <div class="stats-grid enhanced-stats">
+              <div class="stat-card primary" id="stat-card-total">
+                <div class="stat-card-glow"></div>
                 <div class="stat-header">
                   <div class="stat-icon">
                     <i class="fas fa-calendar-check"></i>
@@ -122,15 +142,19 @@
                   <span class="stat-label">Total Appointments</span>
                 </div>
                 <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-card-bar"></div>
               </div>
-              <div class="stat-card success">
+              <div class="stat-card success" id="stat-card-upcoming">
+                <div class="stat-card-glow"></div>
                 <div class="stat-header">
                   <div class="stat-icon"><i class="fas fa-clock"></i></div>
                   <span class="stat-label">Upcoming</span>
                 </div>
                 <div class="stat-value" id="stat-upcoming">0</div>
+                <div class="stat-card-bar"></div>
               </div>
-              <div class="stat-card warning">
+              <div class="stat-card warning" id="stat-card-pending">
+                <div class="stat-card-glow"></div>
                 <div class="stat-header">
                   <div class="stat-icon">
                     <i class="fas fa-hourglass-half"></i>
@@ -138,19 +162,22 @@
                   <span class="stat-label">Pending</span>
                 </div>
                 <div class="stat-value" id="stat-pending">0</div>
+                <div class="stat-card-bar"></div>
               </div>
-              <div class="stat-card info">
+              <div class="stat-card info" id="stat-card-notifs">
+                <div class="stat-card-glow"></div>
                 <div class="stat-header">
                   <div class="stat-icon"><i class="fas fa-bell"></i></div>
                   <span class="stat-label">Notifications</span>
                 </div>
                 <div class="stat-value" id="stat-notifs">0</div>
+                <div class="stat-card-bar"></div>
               </div>
             </div>
 
             <div class="grid-2">
               <!-- Upcoming Appointments -->
-              <div class="card">
+              <div class="card elevated-card">
                 <div class="card-header">
                   <h3>
                     <i class="fas fa-calendar-alt"></i> Your Next Appointments
@@ -179,20 +206,21 @@
                 </div>
               </div>
 
-              <!-- Quick Actions -->
+              <!-- Right Column -->
               <div>
-                <div class="card mb-20">
+                <!-- Quick Actions -->
+                <div class="card mb-20 elevated-card">
                   <div class="card-header">
                     <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
                   </div>
                   <div class="card-body">
-                    <div class="quick-actions">
+                    <div class="quick-actions enhanced-quick-actions">
                       <div
                         class="quick-action-item"
                         data-nav="find-doctor"
                         id="qa-find-doctor"
                       >
-                        <div class="quick-action-icon">
+                        <div class="quick-action-icon qa-icon-doctor">
                           <i class="fas fa-user-md"></i>
                         </div>
                         <div class="quick-action-text">
@@ -208,7 +236,7 @@
                         data-nav="appointments"
                         id="qa-view-history"
                       >
-                        <div class="quick-action-icon">
+                        <div class="quick-action-icon qa-icon-history">
                           <i class="fas fa-history"></i>
                         </div>
                         <div class="quick-action-text">
@@ -224,7 +252,7 @@
                         data-nav="profile"
                         id="qa-profile"
                       >
-                        <div class="quick-action-icon">
+                        <div class="quick-action-icon qa-icon-records">
                           <i class="fas fa-file-medical"></i>
                         </div>
                         <div class="quick-action-text">
@@ -238,14 +266,90 @@
                     </div>
                   </div>
                 </div>
-                <div class="help-card">
-                  <h4>Need immediate help?</h4>
-                  <p>
-                    Our 24/7 care concierge is available to assist you with
-                    urgent scheduling or medical questions.
-                  </p>
-                  <button class="btn">Call Care Team</button>
+
+                <!-- AI Emergency Booking -->
+                <div class="emergency-card mt-20 enhanced-emergency" id="ai-emergency-booking">
+                  <!-- Animated top bar handled by CSS -->
+                  <div class="emergency-hero">
+                    <div class="emergency-icon-ring">
+                      <div class="emergency-icon-ring-pulse"></div>
+                      <i class="fas fa-heart-pulse"></i>
+                    </div>
+                    <div class="emergency-hero-text">
+                      <h4>AI Emergency Triage</h4>
+                      <p>Instant symptom analysis & fastest booking</p>
+                    </div>
+                    <span class="emergency-live-badge">
+                      <span class="live-dot"></span> LIVE
+                    </span>
+                  </div>
+
+                  <!-- Steps indicator -->
+                  <div class="emergency-steps" id="emergency-steps">
+                    <div class="emergency-step active" data-step="1">
+                      <div class="step-dot">1</div>
+                      <span>Describe</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="emergency-step" data-step="2">
+                      <div class="step-dot">2</div>
+                      <span>Analyze</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="emergency-step" data-step="3">
+                      <div class="step-dot">3</div>
+                      <span>Booked</span>
+                    </div>
+                  </div>
+
+                  <!-- Input Area -->
+                  <div id="emergency-input-area" class="emergency-input-container">
+                    <div class="emergency-textarea-wrapper">
+                      <i class="fas fa-comment-medical emergency-textarea-icon"></i>
+                      <textarea
+                        id="emergency-symptoms"
+                        placeholder="Describe your symptoms in detail (e.g. severe chest pain radiating to left arm, shortness of breath...)"
+                        rows="4"
+                        class="form-control emergency-textarea"
+                      ></textarea>
+                    </div>
+                    <div class="emergency-hint">
+                      <i class="fas fa-shield-alt"></i>
+                      Your data is encrypted and only shared with your assigned doctor.
+                    </div>
+                    <button
+                      class="btn btn-danger btn-emergency"
+                      id="ai-emergency-btn"
+                    >
+                      <i class="fas fa-bolt"></i>
+                      <span>Analyze & Book Instantly</span>
+                      <i class="fas fa-arrow-right emergency-btn-arrow"></i>
+                    </button>
+                  </div>
+
+                  <!-- Loading State -->
+                  <div id="emergency-loading" class="is-hidden emergency-loading-state">
+                    <div class="emergency-loading-visual">
+                      <div class="loading-ring">
+                        <div class="loading-ring-inner"></div>
+                      </div>
+                      <div class="loading-brain-icon">
+                        <i class="fas fa-brain"></i>
+                      </div>
+                    </div>
+                    <h4 class="loading-title">AI is analyzing your symptoms...</h4>
+                    <p class="loading-subtitle">Matching you with the best specialist and fastest slot</p>
+                    <div class="loading-progress-bar">
+                      <div class="loading-progress-fill"></div>
+                    </div>
+                  </div>
+
+                  <!-- Result Area -->
+                  <div id="emergency-result" class="is-hidden mt-10 emergency-result-card">
+                    <!-- Results will be injected here by JS -->
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -295,10 +399,12 @@
               </button>
             </div>
 
-            <div class="card">
+            <div class="card elevated-card">
               <div class="card-body">
                 <div class="appointment-list" id="appointments-list">
-                  <div class="loading-overlay"><div class="loader"></div></div>
+                  <div class="loading-overlay">
+                    <div class="loader"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -317,7 +423,6 @@
               <select id="filter-specialization">
                 <option value="all">All Specializations</option>
               </select>
-              <input type="date" id="filter-date" placeholder="Select date" />
               <button class="btn btn-primary btn-sm" id="filter-search-btn">
                 <i class="fas fa-search"></i> Search
               </button>
@@ -327,7 +432,9 @@
             </div>
 
             <div class="doctor-cards" id="doctor-list">
-              <div class="loading-overlay"><div class="loader"></div></div>
+              <div class="loading-overlay">
+                <div class="loader"></div>
+              </div>
             </div>
           </div>
 
@@ -348,7 +455,7 @@
               </div>
             </div>
 
-            <div class="card">
+            <div class="card elevated-card">
               <div class="card-header">
                 <h3><i class="fas fa-edit"></i> Edit Profile</h3>
               </div>
@@ -443,6 +550,34 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctor Profile Modal -->
+    <div class="modal-overlay" id="doctor-profile-modal">
+      <div class="modal doctor-profile-modal-content">
+        <div class="modal-header doctor-profile-modal-header">
+          <h3><i class="fas fa-user-md"></i> Doctor Profile</h3>
+          <button class="modal-close" id="close-doctor-profile-modal">
+            &times;
+          </button>
+        </div>
+        <div
+          class="modal-body doctor-profile-modal-body"
+          id="doctor-profile-body"
+        >
+          <div class="loading-overlay">
+            <div class="loader"></div>
+          </div>
+        </div>
+        <div class="modal-footer doctor-profile-modal-footer">
+          <button class="btn btn-secondary" id="close-profile-btn">
+            Close
+          </button>
+          <button class="btn btn-primary" id="book-from-profile-btn">
+            <i class="fas fa-calendar-plus"></i> Book Appointment
+          </button>
         </div>
       </div>
     </div>
