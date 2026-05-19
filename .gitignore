@@ -1,0 +1,30 @@
+# IDEs and Editor Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+Thumbs.db
+desktop.ini
+
+# User Uploaded Files (ignore all files inside, but allow keeping the directory)
+backend/uploads/*
+
+# Logs
+*.log
+error_log
+
+# Database Credentials
+# (Uncomment the line below if you change your db.php to contain non-local passwords)
+# backend/config/db.php
+
+# Mail Credentials (contains Gmail App Password)
+backend/config/mail.php
+
+# Composer Dependencies
+/vendor/
+composer.lock

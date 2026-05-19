@@ -1,6 +1,7 @@
 <?php
 /**
- * Doctor Controller - Handles doctor-related operations
+ * Doctor Controller
+ * Handles profile, photo upload, availability, appointments, patients, dashboard.
  */
 
 require_once __DIR__ . '/../models/Doctor.php';
@@ -9,6 +10,7 @@ require_once __DIR__ . '/../models/Appointment.php';
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/PatientController.php';
 
+// ----- Get the doctor's full profile with availability -----
 function handleGetDoctorProfile($userId) {
     $profile = getDoctorProfile($userId);
     if ($profile) {
@@ -19,6 +21,7 @@ function handleGetDoctorProfile($userId) {
     return ['success' => false, 'message' => 'Profile not found'];
 }
 
+// ----- Update doctor profile fields -----
 function handleUpdateDoctorProfile($userId, $data) {
     $result = updateDoctorProfile($userId, $data);
     if ($result) {
@@ -27,35 +30,34 @@ function handleUpdateDoctorProfile($userId, $data) {
     return ['success' => false, 'message' => 'Failed to update profile'];
 }
 
+// ----- Handle photo upload (validate, save, update DB) -----
 function handleUploadDoctorPhoto($userId, $file) {
-    // Validate file
+    // Allowed image types and max size (5 MB)
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    $maxSize = 5 * 1024 * 1024; // 5MB
-    
+    $maxSize = 5 * 1024 * 1024;
+
     if (!isset($file['tmp_name']) || empty($file['tmp_name'])) {
         return ['success' => false, 'message' => 'No file uploaded'];
     }
-    
     if (!in_array($file['type'], $allowedTypes)) {
         return ['success' => false, 'message' => 'Invalid file type. Allowed: JPG, PNG, GIF, WebP'];
     }
-    
     if ($file['size'] > $maxSize) {
         return ['success' => false, 'message' => 'File too large. Max 5MB allowed'];
     }
-    
-    // Create upload directory if not exists
+
+    // Create upload directory if needed
     $uploadDir = UPLOAD_DIR;
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0775, true);
     }
-    
-    // Generate unique filename
+
+    // Generate a unique filename
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = 'doctor_' . $userId . '_' . time() . '.' . $extension;
     $targetPath = $uploadDir . $filename;
-    
-    // Delete old photo if exists
+
+    // Delete old photo file if one exists
     $profile = getDoctorProfile($userId);
     if ($profile && $profile['photo']) {
         $oldPath = $uploadDir . basename($profile['photo']);
@@ -63,21 +65,23 @@ function handleUploadDoctorPhoto($userId, $file) {
             unlink($oldPath);
         }
     }
-    
+
+    // Move uploaded file to destination
     if (move_uploaded_file($file['tmp_name'], $targetPath)) {
         $photoUrl = UPLOAD_URL . $filename;
         updateDoctorPhoto($userId, $photoUrl);
         return ['success' => true, 'message' => 'Photo uploaded successfully', 'photo' => $photoUrl];
     }
-    
+
     return ['success' => false, 'message' => 'Failed to upload photo'];
 }
 
+// ----- Save doctor weekly availability schedule -----
 function handleSetAvailability($doctorId, $schedules) {
     if (empty($schedules)) {
         return ['success' => false, 'message' => 'No schedule data provided'];
     }
-    
+
     $result = setDoctorAvailability($doctorId, $schedules);
     if ($result) {
         return ['success' => true, 'message' => 'Availability updated successfully'];
@@ -85,16 +89,19 @@ function handleSetAvailability($doctorId, $schedules) {
     return ['success' => false, 'message' => 'Failed to update availability'];
 }
 
+// ----- Get doctor's appointments (optionally filtered) -----
 function handleGetDoctorAppointments($doctorId, $status = null) {
     $appointments = getDoctorAppointments($doctorId, $status);
     return ['success' => true, 'appointments' => $appointments];
 }
 
+// ----- Doctor approves, rejects, or completes an appointment -----
 function handleUpdateAppointmentStatus($doctorId, $data) {
     if (empty($data['appointment_id']) || empty($data['status'])) {
         return ['success' => false, 'message' => 'Appointment ID and status are required'];
     }
-    
+
+    // Verify the appointment belongs to this doctor
     $appointment = getAppointmentById($data['appointment_id']);
     if (!$appointment) {
         return ['success' => false, 'message' => 'Appointment not found'];
@@ -102,15 +109,16 @@ function handleUpdateAppointmentStatus($doctorId, $data) {
     if ($appointment['doctor_id'] != $doctorId) {
         return ['success' => false, 'message' => 'Unauthorized'];
     }
-    
+
+    // Only allow valid status transitions
     $validStatuses = [STATUS_APPROVED, STATUS_REJECTED, STATUS_COMPLETED];
     if (!in_array($data['status'], $validStatuses)) {
         return ['success' => false, 'message' => 'Invalid status'];
     }
-    
+
     updateAppointmentStatus($data['appointment_id'], $data['status'], $data['notes'] ?? null);
-    
-    // Notify patient
+
+    // Notify the patient about the status change
     $statusText = ucfirst($data['status']);
     createNotification(
         $appointment['patient_id'],
@@ -118,22 +126,24 @@ function handleUpdateAppointmentStatus($doctorId, $data) {
         "Your appointment with Dr. " . $appointment['doctor_name'] . " on " . $appointment['appointment_date'] . " has been $statusText.",
         'appointment'
     );
-    
+
     return ['success' => true, 'message' => "Appointment $statusText successfully"];
 }
 
+// ----- Get the list of patients who have booked with this doctor -----
 function handleGetDoctorPatients($doctorId) {
     $patients = getPatientsByDoctor($doctorId);
     return ['success' => true, 'patients' => $patients];
 }
 
+// ----- Doctor dashboard: today's schedule, pending count, stats -----
 function handleGetDoctorDashboard($doctorId) {
     $todayAppointments = getTodayAppointments($doctorId);
     $pendingAppointments = getDoctorAppointments($doctorId, STATUS_PENDING);
     $allAppointments = getDoctorAppointments($doctorId);
     $patients = getPatientsByDoctor($doctorId);
     $notifications = getUnreadNotifications($doctorId);
-    
+
     return [
         'success' => true,
         'dashboard' => [
